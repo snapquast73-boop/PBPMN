@@ -140,3 +140,9 @@ These remain on the [Flagged for Review page](docs/review.html).
   [run 44829362731](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829362731)).
 - Merge commit, Pages deployment and the post-deploy published-site check are appended below once
   they exist.
+
+---
+
+## Session a5191c3d — final integration and independent verification (2026-11-20)
+
+- **In progress — a5191c3d (2026-11-20):** final integration session on the Arena-assigned branch `arena/a5191c3d-pbpmn` (branched from `d0d69a2`, the PR #9 merge). Scope (narrow, non-overlapping): `COORDINATION.md`, `VERIFICATION-a5191c3d.md`, and `VERIFICATION-26c1dbb9.md` integrated verbatim from PR #11's branch without touching PR #9's hardened files (`tools/published_check.py`, `.github/workflows/published-site-check.yml`, `README.md`). No site data, navigation, styling or browser behaviour will be changed unless a functional defect is found and verified; any such defect in another owner's scope will be logged here for handoff first. This session will re-verify the combined data line by line against official MLB sources, confirm the site builds with no broken links, merge the integration branch to `main`, confirm the Pages deployment, and record the PR link and merge result here. Open PRs #10 (a1fdfd4c, COORDINATION-only) and #11 (26c1dbb9, verification + stale pre-PR #9 files) are left untouched for their owners; their content is integrated here by reference, not by merging their stale branches, so nothing is discarded and PR #9's hardening is not regressed. Flagged irregularities do not block the merge and remain on the [Flagged for Review page](docs/review.html).
