@@ -22,6 +22,9 @@ Usage::
     python tools/published_check.py --report out.md      # also write markdown
     python tools/published_check.py --skip-browser       # HTTP checks only
 
+Transient Pages responses (429 and 5xx) are retried three times before a check
+can fail, so a momentary Pages hiccup is not reported as a site defect.
+
 Exit status is 0 only when every executed check passed.
 """
 
@@ -32,6 +35,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import time
 import traceback
 import urllib.error
 import urllib.request
@@ -79,18 +83,31 @@ class Result:
         return "\n".join(lines)
 
 
-def http_get(url: str, origin: str | None = None) -> tuple[int, dict[str, str], bytes]:
+def http_get(url: str, origin: str | None = None, attempts: int = 3) -> tuple[int, dict[str, str], bytes]:
+    """GET a URL, retrying transient failures.
+
+    GitHub Pages answers with an occasional 429/5xx (and a real 503 was observed
+    on a path that did not exist yet), which is not a property of the site. Only
+    those, plus network errors, are retried; a 404 or 200 is returned at once.
+    """
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
     if origin:
         request.add_header("Origin", origin)
-    try:
-        with urllib.request.urlopen(request, timeout=45) as response:
-            return response.status, {k.lower(): v for k, v in response.headers.items()}, response.read()
-    except urllib.error.HTTPError as error:
-        return error.code, {k.lower(): v for k, v in error.headers.items()}, error.read()
-    except (urllib.error.URLError, OSError) as error:
-        # Unreachable host, TLS failure or timeout: report it, never crash.
-        return 0, {}, str(error).encode("utf-8")
+    last: tuple[int, dict[str, str], bytes] = (0, {}, b"")
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=45) as response:
+                return response.status, {k.lower(): v for k, v in response.headers.items()}, response.read()
+        except urllib.error.HTTPError as error:
+            last = (error.code, {k.lower(): v for k, v in error.headers.items()}, error.read())
+            if error.code < 500 and error.code != 429:
+                return last
+        except (urllib.error.URLError, OSError) as error:
+            # Unreachable host, TLS failure or timeout: report it, never crash.
+            last = (0, {}, str(error).encode("utf-8"))
+        if attempt + 1 < attempts:
+            time.sleep(2**attempt)
+    return last
 
 
 def git_blob(path: str) -> bytes | None:
