@@ -31,4 +31,6 @@ The optional [season-release workflow template](automation/github-actions/archiv
 
 `python tools/audit.py` regenerates the historical snapshot from MLB. `python -m unittest discover -s tests` checks the site and archive offline. The [verification workflow](.github/workflows/audit.yml) also exercises real MLB requests. See [coordination and deployment evidence](COORDINATION.md).
 
+`python tools/published_check.py` verifies the deployment itself: every published page and asset must match the committed bytes, every internal link must return HTTP 200, all 41 audit rows must still cite `statsapi.mlb.com`, and the Chrome walkthrough must pass against the live URL. The [published-site workflow](.github/workflows/published.yml) runs it after every successful `github-pages` deployment, weekly, and on demand with any URL.
+
 This independent project is not affiliated with MLB. The [MIT license](LICENSE) covers software only, not MLB data. The original upload lacked the implementation; the review page documents what cannot be confirmed about it.

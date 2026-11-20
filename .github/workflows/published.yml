@@ -1,0 +1,36 @@
+name: Verify published Pages site
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Published site URL to verify
+        required: false
+        default: https://snapquast73-boop.github.io/PBPMN/
+  schedule:
+    - cron: '17 13 * * 1'
+permissions:
+  contents: read
+  deployments: read
+concurrency:
+  group: published-check
+jobs:
+  verify:
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'github-pages')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      URL: ${{ github.event.deployment_status.environment_url || inputs.url || 'https://snapquast73-boop.github.io/PBPMN/' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.deployment.sha || github.sha }}
+      - name: Verify published files, links and source rows over HTTPS
+        run: python tools/published_check.py --url "$URL" --http-only
+      - name: Exercise the published viewer in Chrome
+        run: |
+          pip install playwright==1.56.0
+          python tools/published_check.py --url "$URL"
