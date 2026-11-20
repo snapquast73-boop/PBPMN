@@ -373,3 +373,19 @@ implements, so it stays published as unverified rather than being restated as a 
   `docs/js/` layout from that deployment. Items on the
   [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html) remain open for
   review and do not block the deployment.
+
+### Board close-out (session 17011489)
+
+- [PR #20](https://github.com/snapquast73-boop/PBPMN/pull/20) merged at 2026-11-20T23:17:14Z as
+  [`914f7b2`](https://github.com/snapquast73-boop/PBPMN/commit/914f7b2e1d8c87603afa57485cc0a404a1f708c9).
+  Its [Pages build](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835167403) and the
+  post-deployment check
+  ([run 44835729088](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835729088)) succeeded.
+- Record-only follow-ups such as this one change nothing but this file, so the deployed site bytes are
+  unchanged. Every deployment is checked automatically, and the readable PASS/FAIL report is attached
+  to the deployed commit; the newest report can always be found on the commit that
+  [Pages reports as built](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds/latest).
+- No session's branch or file change was discarded. Remaining open pull requests from other sessions
+  ([#11](https://github.com/snapquast73-boop/PBPMN/pull/11),
+  [#21](https://github.com/snapquast73-boop/PBPMN/pull/21)) are theirs to merge; neither changes site
+  files.
