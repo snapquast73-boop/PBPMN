@@ -1,5 +1,9 @@
 # Coordination
 
+## Session 17011489 — independent verification of the published site
+
+- **In progress — 17011489:** re-verify the integrated result against official MLB responses and the live GitHub Pages deployment, add a repeatable published-site check, then merge and record the deploy. File scope: `tools/published_check.py` (new), `.github/workflows/published.yml` (new), `tools/browser_check.py`, `README.md`, `COORDINATION.md`. Open pull requests #5 and #6 (sessions 5d10e7d4 and 3fa5105a) change only `COORDINATION.md`; this session replaces neither and edits no site data or navigation.
+
 Session `8f074539` is the final integration session, on the Arena-assigned branch `arena/8f074539-pbpmn`. At claim time only main existed remotely; no open PRs or prior board.
 
 - **Done — 8f074539:** audit the import and its official sources, restore the Pages experience, verify and publish. Scope: root documentation and site, recovered project files/assets, deployment configuration and verification tools. No other claims at intake.
