@@ -160,7 +160,13 @@ def check_assets(base: str) -> Result:
         published = hashlib.sha256(body).hexdigest()
         expected_bytes = git_blob(GIT_PATH.get(path, path))
         if expected_bytes is None:
-            result.add(status == 200, f"`{path}` → {status} (no `origin/main` copy to compare)")
+            # Parity includes absence: a path `main` does not contain must not be
+            # served either, so a branch that adds a file can be checked before
+            # the merge without a false failure.
+            result.add(
+                status == 404,
+                f"`{path}` → {status} (absent from `origin/main`, so it must not be published)",
+            )
             continue
         expected = hashlib.sha256(expected_bytes).hexdigest()
         result.add(
