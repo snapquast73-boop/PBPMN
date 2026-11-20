@@ -378,7 +378,7 @@ implements, so it stays published as unverified rather than being restated as a 
 
 - [PR #20](https://github.com/snapquast73-boop/PBPMN/pull/20) merged at 2026-11-20T23:17:14Z as
   [`914f7b2`](https://github.com/snapquast73-boop/PBPMN/commit/914f7b2e1d8c87603afa57485cc0a404a1f708c9).
-  Its [Pages build](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835167403) and the
+  Its [Pages build](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835659827) and the
   post-deployment check
   ([run 44835729088](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835729088)) succeeded.
 - Record-only follow-ups such as this one change nothing but this file, so the deployed site bytes are
