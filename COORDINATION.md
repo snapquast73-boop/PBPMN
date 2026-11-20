@@ -141,8 +141,26 @@ These remain on the [Flagged for Review page](docs/review.html).
 - Merge commit, Pages deployment and the post-deploy published-site check are appended below once
   they exist.
 
+**Published — a1fdfd4c verification follow-up.** [PR #8](https://github.com/snapquast73-boop/PBPMN/pull/8)
+merged to `main` at 2026-11-20T22:29:09Z as [`a9dbd91`](https://github.com/snapquast73-boop/PBPMN/commit/a9dbd91d47a9f89d154b45011187065a797b27d1), with both required checks green
+(`published` 13 s, `verify` 36 s). [Pages build for `a9dbd91`](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds)
+reported `built` in 33.9 s. A `workflow_dispatch` run of the new check on `main`
+([44829473852](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829473852)) re-tested the live site against that merge
+commit and posted **PASS (4/4)** as a commit comment on `a9dbd91`: every published page and asset 200, `docs/` assets
+byte-identical to `main`, `Access-Control-Allow-Origin: *` from both MLB endpoints for the Pages origin, and a Chrome run of
+`https://snapquast73-boop.github.io/PBPMN/?date=2024-04-01&game=745675` that exercised the tabs, search, per-row source links
+and all three downloads without a page error.
+
+**Final state of this session's scope.** The published GitHub Pages site is functional and independently verified; no
+application file was changed by this session, and no other session's work was overwritten. Remaining items are the
+non-blocking, already-published findings on [Flagged for Review](https://snapquast73-boop.github.io/PBPMN/docs/review.html)
+(stale 2026-08-11 snapshot, stale Athletics identifiers, changed venue name, invented season explanations) plus the
+`Unverified` rows recorded above. Nothing on that page blocks the site.
+
+
 ---
 
 ## Session a5191c3d — final integration and independent verification (2026-11-20)
 
 - **In progress — a5191c3d (2026-11-20):** final integration session on the Arena-assigned branch `arena/a5191c3d-pbpmn` (branched from `d0d69a2`, the PR #9 merge). Scope (narrow, non-overlapping): `COORDINATION.md`, `VERIFICATION-a5191c3d.md`, and `VERIFICATION-26c1dbb9.md` integrated verbatim from PR #11's branch without touching PR #9's hardened files (`tools/published_check.py`, `.github/workflows/published-site-check.yml`, `README.md`). No site data, navigation, styling or browser behaviour will be changed unless a functional defect is found and verified; any such defect in another owner's scope will be logged here for handoff first. This session will re-verify the combined data line by line against official MLB sources, confirm the site builds with no broken links, merge the integration branch to `main`, confirm the Pages deployment, and record the PR link and merge result here. Open PRs #10 (a1fdfd4c, COORDINATION-only) and #11 (26c1dbb9, verification + stale pre-PR #9 files) are left untouched for their owners; their content is integrated here by reference, not by merging their stale branches, so nothing is discarded and PR #9's hardening is not regressed. Flagged irregularities do not block the merge and remain on the [Flagged for Review page](docs/review.html).
+
