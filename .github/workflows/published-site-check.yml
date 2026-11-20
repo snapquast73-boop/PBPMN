@@ -1,0 +1,67 @@
+name: Published site check
+
+# Proves the page a visitor loads is the page in main: HTTP status of every
+# published file, byte-for-byte parity with origin/main, MLB CORS permission for
+# the Pages origin, and a real Chrome run against the published URL.
+#
+# The report is posted as a commit comment so the evidence stays readable even
+# when the job log is unavailable to a reviewer.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['arena/**']
+  schedule:
+    - cron: '41 6 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: published-site-check
+  cancel-in-progress: false
+
+jobs:
+  published:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Make origin/main available for the byte comparison
+        run: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: Install the browser driver
+        run: pip install --quiet playwright==1.56.0
+
+      - name: Verify the published site
+        id: verify
+        continue-on-error: true
+        run: python tools/published_check.py --report "$RUNNER_TEMP/report.md"
+
+      - name: Post the report as a commit comment
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ ! -s "$RUNNER_TEMP/report.md" ]; then
+            printf '## Published-site verification\n\nThe check produced no report (see job log).\n' > "$RUNNER_TEMP/report.md"
+          fi
+          {
+            echo
+            echo "_Trigger: \`${{ github.event_name }}\` on \`${{ github.ref_name }}\` · commit \`${GITHUB_SHA:0:7}\`_"
+          } >> "$RUNNER_TEMP/report.md"
+          jq -Rs '{body: .}' "$RUNNER_TEMP/report.md" > "$RUNNER_TEMP/payload.json"
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" --input "$RUNNER_TEMP/payload.json"
+
+      - name: Fail the job when a check failed
+        if: steps.verify.outcome == 'failure'
+        run: exit 1

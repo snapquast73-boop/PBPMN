@@ -17,3 +17,53 @@ Session `8f074539` is the final integration session, on the Arena-assigned branc
 - **In progress — f5839ed3 (2026-11-20):** independent read-only review of the integrated site and automated tests; scope: `VERIFICATION-f5839ed3.md` and this appended coordination entry only. Existing restoration and deployment evidence tasks remain with their owners. This session will not duplicate application changes or merge other sessions' PRs. Arena requires the assigned `arena/f5839ed3-pbpmn` branch, so no extra session branch is created. Any functional defect in another owner's scope will be logged here for handoff.
 - **Coordination resolution:** initial pull encountered a shallow-history rebase issue; aborted, fetched full history, then preserved main's complete deployment evidence and appended only this claim when resolving the coordination-file conflict. No application changes discarded.
 - **Done — f5839ed3, independent review:** four local unit tests, Python compilation and all JavaScript syntax checks passed. Read the response-validation and table-rendering code; confirmed existing public flags disclose the unavailable original implementation. Independently queried the successful [production verification run](https://github.com/snapquast73-boop/PBPMN/actions/runs/44828230014). Detailed boundaries and official-source links: [verification report](VERIFICATION-f5839ed3.md). No new application changes or overlapping restoration work.
+---
+
+## Later session — `a1fdfd4c` (independent verification of the published site)
+
+**Reconciliation first.** This session's original board claimed T1–T5 (a from-scratch restoration of
+`docs/`, `mlb_pbp/`, `tests/`, `automation/`) before the board above existed. That work is
+**withdrawn and not merged**: session `8f074539` had already restored and published the same scope in
+PR #2 (`680a39a`), and merging two reconstructions would have overwritten the published result. The
+withdrawn branch commits are kept only in local patch form; nothing from them was force-pushed over
+the integrated tree.
+
+**Claim (narrow, non-overlapping):** add a published-site verification workflow and tool
+(`.github/workflows/published-site-check.yml`, `tools/published_check.py`), record the evidence here,
+and change no application file except a one-line README pointer. Files touched:
+`tools/published_check.py`, `.github/workflows/published-site-check.yml`, `README.md`,
+`COORDINATION.md`.
+
+### Deployment state observed before this session changed anything
+
+| Item | Observation | Evidence |
+|---|---|---|
+| Pages build for the merged commit | `built`, 25.2 s, commit `680a39a` | [`GET /repos/…/pages/builds`](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds) |
+| Publishing source | `build_type=legacy`, branch `main`, path `/`, `.nojekyll` present | [`GET /repos/…/pages`](https://api.github.com/repos/snapquast73-boop/PBPMN/pages) |
+| Local suite on `main` | 4/4 unittest, 3/3 modules `node --check`, `compileall`, CLI `--help` all pass | `python -m unittest discover -s tests -v` |
+
+### Line-by-line checks against MLB's own endpoints (2026-11-20, UTC)
+
+| Claim | Official source | Result |
+|---|---|---|
+| `sportId=1` is Major League Baseball | [sports/1](https://statsapi.mlb.com/api/v1/sports/1) | Confirmed: `id 1`, `name "Major League Baseball"`, `abbreviation "MLB"` |
+| Giants `teamId=137`, Athletics `teamId=133` | [teams?sportId=1](https://statsapi.mlb.com/api/v1/teams?sportId=1) | Confirmed: `137 "San Francisco Giants"`, abbreviation `SF`, fileCode `sf`; `133 "Athletics"`, abbreviation `ATH`, fileCode `ath` |
+| Import's Athletics identifiers "OAK / fileCode oak/ath" | same | **Irregular:** MLB now returns name `Athletics`, abbreviation `ATH`, fileCode `ath` — no `oak` |
+| `gameTypes=R,F,D,L,W` excludes Spring Training | [2026-03-01 unfiltered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01) (16 games, all `gameType S`) vs [filtered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01&gameTypes=R,F,D,L,W) (0 games) | Confirmed |
+| `GET …/schedule?sportId=1&date=YYYY-MM-DD` (the form `docs/api.js` builds) works | [2024-04-01](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&gameTypes=R,F,D,L,W&hydrate=linescore) | Confirmed: 14 games |
+| 2024-04-01 Giants example `746170`, SF 3 @ LAD 8, Final | [teamId=137](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=137&gameTypes=R,F,D,L,W) | Confirmed |
+| 2024-04-01 Athletics example `745675`, BOS 9 @ OAK 0, Final, Oakland Coliseum | [teamId=133](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=133&gameTypes=R,F,D,L,W) | Confirmed (club name then `Oakland Athletics`) |
+| Import's 2014 opener `380550`, SF 9 @ ARI 8, Chase Field | [teamId=137](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2014-03-31&teamId=137&gameTypes=R,F,D,L,W) | Confirmed |
+| 2026-08-11 has 15 games; `824970` TB @ ATH; `823186` HOU @ SF | [2026-08-11](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-11&gameTypes=R,F,D,L,W) | Confirmed |
+| Import's venue "Dodger Stadium" for `823917` (KC @ LAD) | [2026-08-11 venue slice](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-11&gameTypes=R,F,D,L,W&fields=dates,games,gamePk,venue,id,name) | **Irregular:** MLB now returns `UNIQLO Field at Dodger Stadium`; the merged audit row already uses MLB's returned name |
+| 26 imported season counts, subtotals `≈2,009` / `≈2,024` / `~4,033`, "2023 162 (verified via SD schedule pattern)", "2025 162 (est.)" | row-level audit on [docs/audit.html](https://snapquast73-boop.github.io/PBPMN/docs/audit.html) | Not re-derived here; published as the previous session's sourced rows, and the invented explanations stay flagged on the review page |
+| Today (2026-11-20) has a schedule | [2026-11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20&gameTypes=R,F,D,L,W) | `totalGames: 0` — the viewer's default date legitimately shows "No qualifying games on this date"; this is not a failure |
+
+### Published-site verification (this session's deliverable)
+
+`tools/published_check.py` checks the URL a visitor actually loads and prints a markdown report:
+HTTP status and content type of every published page and asset, root-redirect/query preservation,
+byte-for-byte parity of `docs/` assets with `origin/main`, `Access-Control-Allow-Origin` from
+`statsapi.mlb.com` for the Pages origin, and a Chrome run of the published viewer
+(deep link → tabs → search → per-row source links → three downloads). The workflow posts that report
+as a commit comment, so the evidence is readable independently of job-log retention.

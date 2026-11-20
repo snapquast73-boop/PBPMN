@@ -29,6 +29,6 @@ Omit the dates to archive from 2014-01-01 through today. Schedules are saved by 
 ## Maintenance
 The optional [season-release workflow template](automation/github-actions/archive.yml) is kept outside active workflows so that publishing the viewer does not start bulk downloads. No season release assets are required by the site.
 
-`python tools/audit.py` regenerates the historical snapshot from MLB. `python -m unittest discover -s tests` checks the site and archive offline. The [verification workflow](.github/workflows/audit.yml) also exercises real MLB requests. See [coordination and deployment evidence](COORDINATION.md).
+`python tools/audit.py` regenerates the historical snapshot from MLB. `python tools/published_check.py` verifies the live deployment (HTTP status, byte parity with `main`, MLB CORS for the Pages origin, and a Chrome run); the [published-site workflow](.github/workflows/published-site-check.yml) runs it and posts the report as a commit comment. `python -m unittest discover -s tests` checks the site and archive offline. The [verification workflow](.github/workflows/audit.yml) also exercises real MLB requests. See [coordination and deployment evidence](COORDINATION.md).
 
 This independent project is not affiliated with MLB. The [MIT license](LICENSE) covers software only, not MLB data. The original upload lacked the implementation; the review page documents what cannot be confirmed about it.
