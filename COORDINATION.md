@@ -224,7 +224,40 @@ with its existing owners, and no other session's claim is taken over.
 own deployment evidence and verification records. None of them restored `docs/js/`, the Event log module/test or the
 Pages template; those stay listed as unverified losses on the review page until this session's change lands.
 
-Status: **in progress** — implementation and verification running; the merge record is appended after the pull request.
+**Status: done — merged and deployed.** Implementation, verification and the merge record follow.
+
+#### Merge and deployment record
+
+- **[PR #16](https://github.com/snapquast73-boop/PBPMN/pull/16) merged** to `main` at `2026-11-20T23:10:32Z` as
+  [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/commit/0fd0faa8354195db755005f764e557682f7b2b4e) (merge commit).
+- **Branch checks on head `2e53f45`:** `verify` SUCCESS twice
+  ([44834564667](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834564667),
+  [44834593498](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834593498)) — 5/5 unit tests, 9/9 Event log tests,
+  four `node --check`, `compileall`, CLI help, the full 41-row MLB re-derivation with no diff, a real archive window with
+  digest verification, and the Chrome walkthrough of the working tree.
+- **The only red on the branch** was `Published site check`
+  ([44834563069](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834563069)), which validates the *live* site and
+  therefore failed only on the two post-merge expectations; its report shows every other item passing, including
+  absence-parity for the four new paths.
+- **Pages build for `0fd0faa`:** [`pages build and deployment`
+  44834815307](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834815307) succeeded; the Pages API reports
+  `built` for that commit.
+- **Post-deploy `deployment_status` run** [44834873628](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834873628):
+  step `Verify the published site` **success**.
+- **Readable PASS report:** dispatch run on `main` [44835019941](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835019941)
+  posted **PASS (5/5)** as a commit comment on `0fd0faa`
+  ([commitcomment-211119853](https://github.com/snapquast73-boop/PBPMN/commit/0fd0faa8354195db755005f764e557682f7b2b4e#commitcomment-211119853)):
+  all five pages and five assets return 200 and are byte-identical to `main` — now including `docs/js/api.js`,
+  `docs/js/format.js`, `docs/js/app.js` and `docs/js/eventlog.js` — 41/41 audit rows still cite `statsapi.mlb.com`, both
+  MLB endpoints send `Access-Control-Allow-Origin: *`, and the Chrome run passes its new module-load and Event log
+  assertions against the published deep link.
+- **Independent live fetch after the merge:** `…/docs/?date=2024-04-01&game=745675` renders the 14-game schedule and the
+  745675 line score and decisions with a source link on every row, which can only happen if the moved modules load from
+  `docs/js/` on the deployed site; `…/docs/review.html` serves the new "Event log scope" section.
+- **Conflict log:** rebasing onto `main` conflicted once in `COORDINATION.md` (both sides appended entries). Resolved by
+  keeping `main`'s sections and re-appending this session's section; no session's text was discarded and no conflict
+  marker was committed (`grep -c '^<<<<<<<'` = 0). A later `main` advance (`db85edb`, another verification record) was
+  rebased onto the same way.
 
 
 ### Restored files — each one is a line of the original README
