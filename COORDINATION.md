@@ -231,3 +231,5 @@ listings were read through GraphQL (deployment and check-run records) instead of
   `Access-Control-Allow-Origin: *`, and the Chrome walkthrough passing against the public URL
   ([run 44829063412](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063412),
   [report](https://github.com/snapquast73-boop/PBPMN/commit/dd40f17a870d193a6925b649398312b830cde54c#commitcomment-211114118)).
+
+This record and the concurrency fix above travel as [PR #17](https://github.com/snapquast73-boop/PBPMN/pull/17).
