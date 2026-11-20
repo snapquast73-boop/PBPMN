@@ -1,0 +1,47 @@
+# Optional GitHub Actions Pages deployment template.
+#
+# This repository publishes with GitHub Pages' built-in builder from `main` at
+# `/` (`build_type=legacy` in
+# https://api.github.com/repos/snapquast73-boop/PBPMN/pages), so this file lives
+# under `automation/` and is NOT an active workflow. To use it instead, copy it
+# to `.github/workflows/pages.yml`, set Settings -> Pages -> Build and deployment
+# -> Source to "GitHub Actions", and commit. Nothing in the site needs a build.
+#
+# Official sources for the settings and action versions:
+#   https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow
+#   https://github.com/actions/configure-pages/releases (v6.0.0)
+#   https://github.com/actions/upload-pages-artifact/releases (v5.0.0)
+#   https://github.com/actions/deploy-pages/releases (v5.0.1)
+name: Deploy the archive to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v6
+      # The viewer is static and needs no build step; publish the tree exactly as
+      # the built-in builder does today (root redirect plus docs/).
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v5

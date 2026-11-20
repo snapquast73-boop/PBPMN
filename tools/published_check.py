@@ -12,7 +12,7 @@ Checks, in order:
 4. every published table row on the schedule audit still cites
    ``statsapi.mlb.com`` -- the same rule ``tests/test_site.py`` applies offline;
 5. MLB's endpoints return ``Access-Control-Allow-Origin`` for the Pages origin, so
-   the browser-side fetch in ``docs/api.js`` can work at all;
+   the browser-side fetch in ``docs/js/api.js`` can work at all;
 6. optionally, a real Chrome run of the published site (deep link, tabs, search,
    source links, downloads) via ``tools/browser_check.py``.
 
@@ -21,6 +21,9 @@ Usage::
     python tools/published_check.py                      # full report to stdout
     python tools/published_check.py --report out.md      # also write markdown
     python tools/published_check.py --skip-browser       # HTTP checks only
+
+Transient Pages responses (429 and 5xx) are retried three times before a check
+can fail, so a momentary Pages hiccup is not reported as a site defect.
 
 Exit status is 0 only when every executed check passed.
 """
@@ -32,6 +35,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import time
 import traceback
 import urllib.error
 import urllib.request
@@ -45,7 +49,7 @@ PAGES_ORIGIN = "https://snapquast73-boop.github.io"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 PAGES = ["", "docs/", "docs/index.html", "docs/methodology.html", "docs/audit.html", "docs/review.html"]
-ASSETS = ["docs/style.css", "docs/api.js", "docs/app.js", "docs/format.js"]
+ASSETS = ["docs/style.css", "docs/js/api.js", "docs/js/format.js", "docs/js/app.js", "docs/js/eventlog.js"]
 #: URL path -> file in the repository (directory URLs serve their index page).
 GIT_PATH = {"": "index.html", "docs/": "docs/index.html"}
 AUDIT_ROWS = 41
@@ -79,18 +83,31 @@ class Result:
         return "\n".join(lines)
 
 
-def http_get(url: str, origin: str | None = None) -> tuple[int, dict[str, str], bytes]:
+def http_get(url: str, origin: str | None = None, attempts: int = 3) -> tuple[int, dict[str, str], bytes]:
+    """GET a URL, retrying transient failures.
+
+    GitHub Pages answers with an occasional 429/5xx (and a real 503 was observed
+    on a path that did not exist yet), which is not a property of the site. Only
+    those, plus network errors, are retried; a 404 or 200 is returned at once.
+    """
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
     if origin:
         request.add_header("Origin", origin)
-    try:
-        with urllib.request.urlopen(request, timeout=45) as response:
-            return response.status, {k.lower(): v for k, v in response.headers.items()}, response.read()
-    except urllib.error.HTTPError as error:
-        return error.code, {k.lower(): v for k, v in error.headers.items()}, error.read()
-    except (urllib.error.URLError, OSError) as error:
-        # Unreachable host, TLS failure or timeout: report it, never crash.
-        return 0, {}, str(error).encode("utf-8")
+    last: tuple[int, dict[str, str], bytes] = (0, {}, b"")
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=45) as response:
+                return response.status, {k.lower(): v for k, v in response.headers.items()}, response.read()
+        except urllib.error.HTTPError as error:
+            last = (error.code, {k.lower(): v for k, v in error.headers.items()}, error.read())
+            if error.code < 500 and error.code != 429:
+                return last
+        except (urllib.error.URLError, OSError) as error:
+            # Unreachable host, TLS failure or timeout: report it, never crash.
+            last = (0, {}, str(error).encode("utf-8"))
+        if attempt + 1 < attempts:
+            time.sleep(2**attempt)
+    return last
 
 
 def git_blob(path: str) -> bytes | None:
@@ -123,7 +140,7 @@ def check_pages(base: str) -> Result:
                 ('id="games"', "schedule container present"),
                 ('id="game"', "game section present"),
                 ('id="content"', "game content container present"),
-                ('src="app.js"', "viewer module referenced"),
+                ('src="js/app.js"', "viewer module referenced from `docs/js/`"),
                 ('href="style.css"', "stylesheet referenced"),
                 ("review.html", "Flagged for Review linked"),
             ):
@@ -160,7 +177,13 @@ def check_assets(base: str) -> Result:
         published = hashlib.sha256(body).hexdigest()
         expected_bytes = git_blob(GIT_PATH.get(path, path))
         if expected_bytes is None:
-            result.add(status == 200, f"`{path}` → {status} (no `origin/main` copy to compare)")
+            # Parity includes absence: a path `main` does not contain must not be
+            # served either, so a branch that adds a file can be checked before
+            # the merge without a false failure.
+            result.add(
+                status == 404,
+                f"`{path}` → {status} (absent from `origin/main`, so it must not be published)",
+            )
             continue
         expected = hashlib.sha256(expected_bytes).hexdigest()
         result.add(

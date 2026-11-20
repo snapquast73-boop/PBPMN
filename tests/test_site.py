@@ -1,3 +1,4 @@
+import re
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
@@ -41,3 +42,12 @@ class Site(unittest.TestCase):
                 self.assertEqual(len(doc.rows), 41)
                 for row in doc.rows:
                     self.assertTrue(any(urlsplit(url).netloc == 'statsapi.mlb.com' for url in row))
+
+    def test_viewer_modules(self):
+        """The module layout the original README documents is present and linked."""
+        for name in ('api.js', 'app.js', 'eventlog.js', 'format.js'):
+            self.assertTrue(Path('docs/js', name).is_file(), f'docs/js/{name}')
+        self.assertEqual(list(Path('docs').glob('*.js')), [])
+        for module in Path('docs/js').glob('*.js'):
+            for target in re.findall(r'from\s+"(\./[^"]+)"', module.read_text()):
+                self.assertTrue((module.parent / target).is_file(), f'{module}: {target}')

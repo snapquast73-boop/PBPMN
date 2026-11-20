@@ -32,6 +32,7 @@ def check(base):
         page = browser.new_page()
         errors = []
         page.on('pageerror', lambda exc: errors.append(str(exc)))
+        page.on('requestfailed', lambda request: errors.append(f'{request.url}: {request.failure}'))
         page.set_default_timeout(60000)
         with page.expect_response(lambda r: '/745675/feed/live' in r.url) as feed:
             page.goto(base+'?date=2024-04-01&game=745675')
@@ -40,8 +41,15 @@ def check(base):
         page.locator('#controls').wait_for()
         assert page.locator('#match').inner_text() == ' at '.join(data['gameData']['teams'][s]['name'] for s in ('away','home'))
         assert page.locator('#games a').count() > 0
+        # The original README documents docs/js/ as the module location: prove
+        # the browser really loaded the viewer modules from there.
+        loaded = page.evaluate("performance.getEntriesByType('resource').map(e => e.name)")
+        for module in ('api', 'app', 'eventlog', 'format'):
+            assert any(url.endswith(f'/docs/js/{module}.js') for url in loaded), module
         for tab in ('Plays','Box score','Event log','Overview'):
             page.get_by_role('button', name=tab, exact=True).click()
+            if tab == 'Event log':
+                assert 'Observations made while this browser was watching' in page.locator('#content').inner_text()
             if tab == 'Plays':
                 plays = data['liveData']['plays']['allPlays']
                 assert page.locator('details').count() == len(plays)

@@ -16,7 +16,9 @@ jobs:
         run: |
           python -m unittest discover -s tests -v
           python -m compileall -q mlb_pbp
-          for f in docs/*.js; do node --check "$f"; done
+          for f in docs/js/*.js; do node --check "$f"; done
+          node --test tests/test_eventlog.mjs
+          python -m mlb_pbp --help > /dev/null
       - name: Reconcile all published schedule rows with MLB
         run: python tools/audit.py && git diff --exit-code docs/audit.html
       - name: Retrieve and verify a complete official archive window

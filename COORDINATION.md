@@ -203,6 +203,82 @@ listings were read through GraphQL (deployment and check-run records) instead of
 - **Done — 6af827e0, independent verification:** offline suite 4/4, `compileall`, `node --check` ×3 and CLI `--help` pass. Fetched the live pages directly: root redirect, deep link `?date=2024-04-01&game=745675` (14-game schedule; 745675 line score 9-0 and decisions with per-row `statsapi.mlb.com` links), `docs/audit.html` (41 sourced rows), `docs/review.html`, `docs/methodology.html`. Fetched MLB directly in this session: [sports/1](https://statsapi.mlb.com/api/v1/sports/1), [teams](https://statsapi.mlb.com/api/v1/teams?sportId=1&fields=teams,id,name,abbreviation,fileCode) (`137` SF/`sf`, `133` Athletics/`ath`, no `oak`), the [2026-08-11 schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameTypes=R,F,D,L,W&date=2026-08-11&fields=dates,games,gamePk,gameDate,status,detailedState,teams,away,home,team,name,venue) — **all 15 rows match the audit field-by-field including Eastern times** — **all 26 team-season `totalGames` windows** (fetched each published source URL; every value matches `docs/audit.html`), first/last spot checks for 137 2014, 137 2026, 133 2014, 133 2024 and 133 2026, the [2024-04-01 viewer query](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&gameTypes=R,F,D,L,W&hydrate=linescore&fields=copyright,totalGames) (`14`), the [745675 feed](https://statsapi.mlb.com/api/v1.1/game/745675/feed/live?fields=gamePk,gameData,teams,away,home,name,liveData,linescore,decisions,winner,loser,save,fullName) (identity + decisions), the [746170 at-bat 12](https://statsapi.mlb.com/api/v1.1/game/746170/feed/live?fields=liveData,plays,allPlays,about,atBatIndex,result,description) (strikeout, contradicting the import’s single), and [2026-11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20&gameTypes=R,F,D,L,W&fields=copyright,totalGames) (`0`). CI on this branch head `c9ab938`: [verify run 44832312641](https://github.com/snapquast73-boop/PBPMN/actions/runs/44832312641) SUCCESS (includes full 41-row MLB re-derivation with no diff and the Chrome walkthrough) and [published-site check run 44832312658](https://github.com/snapquast73-boop/PBPMN/actions/runs/44832312658) PASS 5/5 (pages/assets byte-identical to `origin/main`, 41/41 sourced rows, MLB CORS `*`, live Chrome run). Full evidence: [verification report](VERIFICATION-6af827e0.md). No new functional defect established.
 - **Needs review — 6af827e0:** unchanged from the live [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html) and [report §H](VERIFICATION-6af827e0.md); none block the site.
 
+---
+
+## Session `7d03b8fa` — restore the file layout the original README documents (2026-11-20)
+
+**Claim (narrow, non-overlapping).** The uploaded tree at
+[`14c9aaf`](https://github.com/snapquast73-boop/PBPMN/tree/14c9aaf304a65ef0c8e4b25819a6eb0b829218c3) kept the original
+`README.md`, which names four implementation paths that the import lost:
+`docs/js/api.js`, `docs/js/format.js`, `docs/js/app.js` (its "Development and tests" commands),
+`tests/test_eventlog.mjs` (`node --test tests/test_eventlog.mjs`) and
+`automation/github-actions/pages.yml` (its repository map). This session restores that documented layout, extracts the
+Event log behaviour into `docs/js/eventlog.js` so the documented test can exist, and keeps the visible design and
+behaviour unchanged. Files touched: `docs/index.html`, `docs/js/*` (moved from `docs/*.js`, plus `eventlog.js`),
+`docs/review.html`, `tests/test_site.py`, `tests/test_eventlog.mjs`, `tools/browser_check.py`,
+`tools/published_check.py`, `.github/workflows/audit.yml`, `automation/github-actions/pages.yml`, `README.md`,
+`COORDINATION.md`. No table data, audit row, navigation target or styling is changed; the audit/review content stays
+with its existing owners, and no other session's claim is taken over.
+
+**Why this is not a duplicate.** Sessions `8f074539`, `f5839ed3`, `17011489`, `a1fdfd4c`, `26c1dbb9` and `a5191c3d`
+own deployment evidence and verification records. None of them restored `docs/js/`, the Event log module/test or the
+Pages template; those stay listed as unverified losses on the review page until this session's change lands.
+
+Status: **in progress** — implementation and verification running; the merge record is appended after the pull request.
+
+
+### Restored files — each one is a line of the original README
+
+The original `README.md` (uploaded in `14c9aaf`, still in git history) is the only surviving specification. Each path and
+command it names was checked against the working tree:
+
+| Original README line | Before this session | Now | Evidence |
+| --- | --- | --- | --- |
+| `node --check docs/js/api.js` (Development and tests) | missing (`docs/api.js`) | `docs/js/api.js` | `node --check docs/js/api.js` in [run 44830512774](https://github.com/snapquast73-boop/PBPMN/actions/runs/44830512774) |
+| `node --check docs/js/format.js` | missing (`docs/format.js`) | `docs/js/format.js` | same run |
+| `node --check docs/js/app.js` | missing (`docs/app.js`) | `docs/js/app.js` | same run |
+| `node --test tests/test_eventlog.mjs` | file and command absent | `tests/test_eventlog.mjs`, 9 tests, synthetic fixtures | `node --test tests/test_eventlog.mjs` locally and in that run |
+| `automation/github-actions/pages.yml` (Repository map) | absent | restored as an inactive template | PyYAML 6.0.2 parses all four workflow files: valid YAML, `deploy` job, `push`/`workflow_dispatch` triggers; living under `automation/` means GitHub does not run it |
+| `python -m unittest discover -s tests -v`, `python -m compileall -q mlb_pbp` | present | present, 5 tests now | same run |
+| "checks browser JavaScript syntax, and exercises CLI help" (CI) | syntax only | syntax, `node --test`, and `python -m mlb_pbp --help` | [`.github/workflows/audit.yml`](.github/workflows/audit.yml) |
+
+**Behaviour parity, not just paths.** The Event log logic was moved out of `docs/js/app.js` into `docs/js/eventlog.js`
+without changing its output. The inline implementation from `d0d69a2` was extracted with `git show d0d69a2:docs/app.js`
+and run side by side with the module over five synthetic poll sequences (live-only, a score change, a live→final
+transition, missing scores, a preview game). Rows, order, kinds, values and retrieval times were identical in all five;
+the one earlier mismatch was a bug in the throw-away comparison script, not in the module.
+
+**One accuracy defect fixed while extracting.** The Event log reused the table helper's empty message, so an empty log
+read "No records supplied by MLB." — which is not what an empty log means (nothing was observed locally). It now says
+"No changes observed by this browser…". Tables elsewhere are unchanged.
+
+**Verification run in this session:**
+
+- `python -m unittest discover -s tests -v` → 5/5 pass (the new `test_viewer_modules` also proves `docs/` holds no loose
+  `*.js` and every relative `import` target exists).
+- `node --test tests/test_eventlog.mjs` → 9/9 pass; `node --check` on all four modules.
+- A local Pages-style server: 12 URLs 200 with the expected content types, every internal link in all five HTML pages
+  resolves, and every module import resolves.
+- HTML tag-balance check on all five pages: no unclosed or mismatched tags.
+- The published-check tool now (a) lists the five `docs/js` assets, (b) treats a path absent from `main` as parity only
+  when it is absent from the deployment too, and (c) retries 429/5xx before failing. A local server returning 503, 503,
+  200 confirmed the retry (three attempts, then the 200).
+
+**Expected pre-merge red, stated up front.** `Published site check` runs on branch pushes against the *live* site, which
+still serves `main`. Until this branch is merged it must therefore fail on exactly the new expectations (`src="js/app.js"`,
+the four `docs/js` assets, and the browser's module-load assertion); the
+[report on `dbbc048`](https://github.com/snapquast73-boop/PBPMN/commit/dbbc04808891747f439677f0328cc8153c52a0aa#commitcomment-211115505)
+shows only those items failing, with every existing page byte-identical to `main` and all 41 audit rows still sourced.
+The gate for this change is the post-merge deployment run, recorded below.
+
+**Request for another owner (not edited here).** `.github/workflows/published-site-check.yml` uses `actions/checkout@v4`
+and `actions/setup-python@v5`, which the runner now warns are Node 20 targets; its owner can bump both. It is outside this
+session's scope, so nothing in it was touched.
+
+**Flagged, not silently filled in.** `docs/review.html` gains an "Event log scope" section: the uploaded README's
+description of review stages, scoring-pending rulings and boundary calls is **not** what the reconstructed log
+implements, so it stays published as unverified rather than being restated as a feature.
+
 ### Merge and deployment record
 
 - **Merged.** [PR #9](https://github.com/snapquast73-boop/PBPMN/pull/9) merged into `main` at
@@ -210,26 +286,32 @@ listings were read through GraphQL (deployment and check-run records) instead of
   Pre-merge checks passed: [full verification](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829575460)
   and [published site check](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829575466).
 - **Deployed.** The [Pages build for `d0d69a2`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829873644)
-  succeeded; the [Pages API](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds/latest)
-  reports `status: built`. Four later record-only merges from other sessions (#13, #14, #15 and the
-  parallel QA branches) changed only `COORDINATION.md` and `VERIFICATION-*.md`; their Pages builds
-  also succeeded ([`ddeabd8`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44831972896),
-  [`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834520308)), so the published
-  files are unchanged.
-- **Post-deployment check.** The new `deployment_status` trigger ran the published-site check against
-  the deployment for [`2d1099f`](https://github.com/snapquast73-boop/PBPMN/commit/2d1099fa6b5a64a3eba48d17b987416d7004f233):
-  [run 44834607476](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834607476) succeeded, with
-  the `Verify the published site` step passing (the job fails if any section does). Three earlier
-  deployment runs ([44834567535](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834567535),
-  [44834567245](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834567245),
-  [44834574141](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834574141)) were cancelled
-  because a single shared concurrency group let any unrelated branch push cancel a queued deployment
-  check. This record's pull request gives each deployment and branch its own group and now posts the
-  readable report for deployment runs as a commit comment.
-- **Live site.** <https://snapquast73-boop.github.io/PBPMN/> — every page 200 and byte-identical to
-  `main`, 41/41 audit rows citing `statsapi.mlb.com`, MLB sending
-  `Access-Control-Allow-Origin: *`, and the Chrome walkthrough passing against the public URL
-  ([run 44829063412](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063412),
-  [report](https://github.com/snapquast73-boop/PBPMN/commit/dd40f17a870d193a6925b649398312b830cde54c#commitcomment-211114118)).
-
-This record and the concurrency fix above travel as [PR #17](https://github.com/snapquast73-boop/PBPMN/pull/17).
+  succeeded. Record-only merges from other sessions (#13, #14, #15) changed only `COORDINATION.md` and
+  `VERIFICATION-*.md`, and their builds also succeeded
+  ([`ddeabd8`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44831972896),
+  [`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834520308)).
+  [PR #16](https://github.com/snapquast73-boop/PBPMN/pull/16) (session 7d03b8fa) then restored the
+  `docs/js/` layout the original README names and added the Event log module and its tests; the
+  [Pages API](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds/latest) reports
+  `status: built` for that commit, [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/commit/0fd0faa8354195db755005f764e557682f7b2b4e),
+  at 23:10:52Z. The data rows are unchanged by that layout work.
+- **Post-deployment checks.** The `deployment_status` trigger ran the published-site check against the
+  live deployment of [`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834607476)
+  and of [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834873628); both
+  succeeded (`Verify the published site` passing means every section passed, because the job fails
+  otherwise). For each deployment, however, several queued runs were cancelled first
+  ([`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834574141),
+  [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834859291) among them): one
+  shared concurrency group let any unrelated branch push cancel a queued deployment check. The
+  following pull request gives each deployment commit — and each branch — its own group and posts the
+  readable report for deployment runs too.
+- **Live site.** <https://snapquast73-boop.github.io/PBPMN/> — every page 200, published bytes
+  identical to `main`, 41/41 audit rows citing `statsapi.mlb.com`, both MLB endpoints sending
+  `Access-Control-Allow-Origin: *`, and the Chrome walkthrough passing against the public URL.
+  Readable reports:
+  [pre-layout site](https://github.com/snapquast73-boop/PBPMN/commit/dd40f17a870d193a6925b649398312b830cde54c#commitcomment-211114118)
+  ([run 44829063412](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063412)) and the
+  current `docs/js/` deployment (`0fd0faa`, run above). Local pages-style re-run of the same tool
+  passed 36 assertions before this record was committed.
+- **Pull request for this record and the concurrency fix:**
+  [#17](https://github.com/snapquast73-boop/PBPMN/pull/17).
