@@ -27,6 +27,7 @@ python -m mlb_pbp verify archive
 Omit the dates to archive from 2014-01-01 through today. Schedules are saved by month under `schedules/`. Outputs under `games/`, `raw/` and `events/` are grouped by official date. Raw JSON is compressed unless `--raw-uncompressed` is specified. Manifests retain the MLB notice, URL, UTC retrieval time, and SHA-256 digests. Resume checks existing files. Use `--refresh` to retrieve corrections; verification uses the latest manifest entry for each game or schedule window. Failures go to `errors.ndjson`. Large data archives stay out of Git.
 
 ## Maintenance
+The optional [season-release workflow template](automation/github-actions/archive.yml) is kept outside active workflows so that publishing the viewer does not start bulk downloads. No season release assets are required by the site.
 
 `python tools/audit.py` regenerates the historical snapshot from MLB. `python -m unittest discover -s tests` checks the site and archive offline. The [verification workflow](.github/workflows/audit.yml) also exercises real MLB requests. See [coordination and deployment evidence](COORDINATION.md).
 

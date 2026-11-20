@@ -27,3 +27,6 @@ jobs:
         run: |
           pip install playwright==1.56.0
           python tools/browser_check.py
+      - name: Smoke-test the public deployment (post-merge dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: python tools/browser_check.py https://snapquast73-boop.github.io/PBPMN/

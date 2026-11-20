@@ -1,0 +1,71 @@
+# Optional: install in .github/workflows/ to enable season releases.
+name: Build verified season archives
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: Four-digit season or all (2014 onward)
+        default: all
+        required: true
+  schedule:
+    - cron: '23 9 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: season-archives
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      seasons: ${{ steps.plan.outputs.seasons }}
+    steps:
+      - id: plan
+        env:
+          SEASON: ${{ inputs.season }}
+        run: |
+          python - <<'PY'
+          import datetime, json, os
+          year = datetime.date.today().year
+          arg = os.environ['SEASON'] or str(year)
+          years = list(range(2014, year + 1)) if arg == 'all' else [int(arg)]
+          assert all(2014 <= v <= year for v in years)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f: print('seasons='+json.dumps(years), file=f)
+          PY
+  archive:
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        season: ${{ fromJSON(needs.plan.outputs.seasons) }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      YEAR: ${{ matrix.season }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Restore previous season if available
+        run: |
+          tag="archive-$YEAR"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release download "$tag" -p "$tag.tar.gz*"
+            sha256sum -c "$tag.tar.gz.sha256"
+            tar -xzf "$tag.tar.gz"
+            python -m mlb_pbp verify archive
+          fi
+      - name: Update, verify and publish
+        run: |
+          end=$(date -u +%F)
+          if [[ "$YEAR-12-31" < "$end" ]]; then end="$YEAR-12-31"; fi
+          python -m mlb_pbp archive --start "$YEAR-01-01" --end "$end"
+          recent=$(date -u -d "$end -6 days" +%F)
+          if [[ "$recent" < "$YEAR-01-01" ]]; then recent="$YEAR-01-01"; fi
+          python -m mlb_pbp archive --start "$recent" --end "$end" --refresh
+          python -m mlb_pbp verify archive
+          tag="archive-$YEAR"
+          tar -czf "$tag.tar.gz" archive
+          sha256sum "$tag.tar.gz" > "$tag.tar.gz.sha256"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "$YEAR MLB archive" --notes 'Verified official responses and deterministic exports.'
+          fi
+          gh release upload "$tag" "$tag.tar.gz" "$tag.tar.gz.sha256" --clobber

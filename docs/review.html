@@ -1,6 +1,93 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flagged for Review · MLB Plaintext</title><link rel="stylesheet" href="style.css"><main><nav><a href="./">MLB / PLAINTEXT</a><a href="audit.html">Verified schedule rows</a></nav><p class="label">Import audit / 20 November 2026</p><h1>Flagged for Review</h1>
-<p>These findings concern the <a href="https://github.com/snapquast73-boop/PBPMN/blob/14c9aaf304a65ef0c8e4b25819a6eb0b829218c3/GIANTS_ATHLETICS_2014-2026_REVIEW.md">original uploaded report</a>, not a prediction about future games. Unsupported values are omitted. MLB may revise past records.</p>
-<section><h2>August 11 snapshot</h2><p>The <a href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-11&amp;gameTypes=R,F,D,L,W">official schedule</a> now lists finals. It cannot confirm the import’s midnight preview status or empty feeds at that time. The Athletics feed is <a href="https://statsapi.mlb.com/api/v1.1/game/824970/feed/live">824970</a>, not <a href="https://statsapi.mlb.com/api/v1.1/game/823512/feed/live">823512</a>. The current venue name for the Los Angeles night game also differs; the audit uses MLB’s returned name.</p></section>
-<section><h2>Season counts and examples</h2><p>The <a href="audit.html">row-by-row audit</a> replaces all 26 season entries with direct team queries. The import used another club’s pattern for Oakland in 2023 and an estimate for 2025. Its 2024 Oakland and partial 2026 Athletics counts differ from MLB; its first 2024 Oakland game and last 2022 San Francisco date also differ. See the source on each affected row.</p><p><b>Unverified:</b> explanations for extra schedule entries (including tiebreakers and postseason rounds), approximate combined/subtotals, typical pitch and play counts, and universal claims of complete coverage. A schedule count does not establish those facts. No estimate is used in their place.</p></section>
-<section><h2>Play and pitch examples</h2><p>The <a href="https://statsapi.mlb.com/api/v1.1/game/746170/feed/live">Giants game feed</a> describes at-bat index 12 as “Thairo Estrada strikes out swinging.” The imported single and its pitch measurements were not retained. The <a href="https://statsapi.mlb.com/api/v1.1/game/745675/feed/live">Oakland example feed</a> supplies its decisions directly. See <a href="./?date=2024-04-01&amp;game=745675">the viewer</a> for the actual plays and pitches rather than transcribed examples.</p></section>
-<section><h2>Original implementation unavailable</h2><p>The <a href="https://github.com/snapquast73-boop/PBPMN/tree/14c9aaf304a65ef0c8e4b25819a6eb0b829218c3">uploaded tree</a> omitted the site, Python package, tests and workflow templates. GitHub did not return the repository named in its README. This is a reconstruction: exact appearance, byte-for-byte formatter compatibility, historical local logs and previously built season archives could not be verified or recovered.</p></section></main></html>
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Flagged for Review · MLB Plaintext</title
+  ><link rel="stylesheet" href="style.css" />
+  <main>
+    <nav>
+      <a href="./">MLB / PLAINTEXT</a
+      ><a href="audit.html">Verified schedule rows</a>
+    </nav>
+    <p class="label">Import audit / 20 November 2026</p>
+    <h1>Flagged for Review</h1>
+    <p>
+      These findings concern the
+      <a
+        href="https://github.com/snapquast73-boop/PBPMN/blob/14c9aaf304a65ef0c8e4b25819a6eb0b829218c3/GIANTS_ATHLETICS_2014-2026_REVIEW.md"
+        >original uploaded report</a
+      >, not a prediction about future games. Unsupported values are omitted.
+      MLB may revise past records.
+    </p>
+    <section>
+      <h2>August 11 snapshot</h2>
+      <p>
+        The
+        <a
+          href="https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;date=2026-08-11&amp;gameTypes=R,F,D,L,W"
+          >official schedule</a
+        >
+        now lists finals. It cannot confirm the import’s midnight preview status
+        or empty feeds at that time. The Athletics feed is
+        <a href="https://statsapi.mlb.com/api/v1.1/game/824970/feed/live"
+          >824970</a
+        >, not
+        <a href="https://statsapi.mlb.com/api/v1.1/game/823512/feed/live"
+          >823512</a
+        >. The current venue name for the Los Angeles night game also differs;
+        the audit uses MLB’s returned name.
+      </p>
+    </section>
+    <section>
+      <h2>Season counts and examples</h2>
+      <p>
+        The <a href="audit.html">row-by-row audit</a> replaces all 26 season
+        entries with direct team queries. The import used another club’s pattern
+        for Oakland in 2023 and an estimate for 2025. Its 2024 Oakland and
+        partial 2026 Athletics counts differ from MLB; its first 2024 Oakland
+        game and last 2022 San Francisco date also differ. See the source on
+        each affected row.
+      </p>
+      <p>
+        <b>Unverified:</b> explanations for extra schedule entries (including
+        tiebreakers and postseason rounds), approximate combined/subtotals,
+        typical pitch and play counts, and universal claims of complete
+        coverage. A schedule count does not establish those facts. No estimate
+        is used in their place.
+      </p>
+    </section>
+    <section>
+      <h2>Play and pitch examples</h2>
+      <p>
+        The
+        <a href="https://statsapi.mlb.com/api/v1.1/game/746170/feed/live"
+          >Giants game feed</a
+        >
+        describes at-bat index 12 as “Thairo Estrada strikes out swinging.” The
+        imported single and its pitch measurements were not retained. The
+        <a href="https://statsapi.mlb.com/api/v1.1/game/745675/feed/live"
+          >Oakland example feed</a
+        >
+        supplies its decisions directly. See
+        <a href="./?date=2024-04-01&amp;game=745675">the viewer</a> for the
+        actual plays and pitches rather than transcribed examples.
+      </p>
+    </section>
+    <section>
+      <h2>Original implementation unavailable</h2>
+      <p>
+        The
+        <a
+          href="https://github.com/snapquast73-boop/PBPMN/tree/14c9aaf304a65ef0c8e4b25819a6eb0b829218c3"
+          >uploaded tree</a
+        >
+        omitted the site, Python package, tests and workflow templates. GitHub
+        did not return the repository named in its README. This is a
+        reconstruction: exact appearance, byte-for-byte formatter compatibility,
+        historical local logs and previously built season archives could not be
+        verified or recovered.
+      </p>
+    </section>
+  </main>
+</html>
