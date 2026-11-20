@@ -315,3 +315,27 @@ implements, so it stays published as unverified rather than being restated as a 
   passed 36 assertions before this record was committed.
 - **Pull request for this record and the concurrency fix:**
   [#17](https://github.com/snapquast73-boop/PBPMN/pull/17).
+
+### Follow-up merge and final deployment (session 17011489)
+
+- **Merged.** [PR #17](https://github.com/snapquast73-boop/PBPMN/pull/17) merged into `main` at
+  2026-11-20T23:13:17Z as
+  [`db85edb`](https://github.com/snapquast73-boop/PBPMN/commit/db85edbaec97e7d8e411b07f0ea46f56efd81333).
+  Pre-merge checks: [verify](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835062417) and
+  [published site check](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835055242) both
+  passed.
+- **Deployed.** The [Pages build for `db85edb`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835167403)
+  succeeded and the [Pages API](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds/latest)
+  reports `status: built`.
+- **The concurrency fix works.** For `db85edb` the deployment produced exactly one real check,
+  [run 44835230445](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835230445), which passed
+  all five sections; the three non-success deployment statuses were filtered out by the job condition
+  instead of cancelling the run.
+  [Readable report](https://github.com/snapquast73-boop/PBPMN/commit/db85edbaec97e7d8e411b07f0ea46f56efd81333#commitcomment-211120027)
+  — pages and `docs/js/` assets byte-identical to `main`, 41/41 audit rows citing
+  `statsapi.mlb.com`, `Access-Control-Allow-Origin: *` from both MLB endpoints, and the Chrome
+  walkthrough of `?date=2024-04-01&game=745675` passing with no page errors.
+- **Current live state.** <https://snapquast73-boop.github.io/PBPMN/> serves the restored
+  `docs/js/` layout from that deployment. Items on the
+  [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html) remain open for
+  review and do not block the deployment.
