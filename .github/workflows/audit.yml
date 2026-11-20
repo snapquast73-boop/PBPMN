@@ -1,0 +1,14 @@
+name: Verify MLB schedule sources
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python tools/audit.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: schedule-audit
+          path: docs/audit.html
