@@ -115,16 +115,16 @@ with `git diff --exit-code docs/audit.html`).
   official-host restriction, internal links + 41 sourced audit rows).
 - `python -m compileall -q mlb_pbp` — pass. `node --check` on `docs/api.js`, `docs/app.js`,
   `docs/format.js` — pass. `python -m mlb_pbp --help` — pass.
-- [Verify archive and Pages viewer — run 44830766241](https://github.com/snapquast73-boop/PBPMN/actions/runs/44830766241)
-  — SUCCESS on this branch: offline suite, JS syntax, full re-derivation of the 41 audit rows
-  from MLB with no diff, official archive retrieval and digest verification, and the Chrome
-  walkthrough.
-- [Published site check — run 44830766301](https://github.com/snapquast73-boop/PBPMN/actions/runs/44830766301)
+- [Verify archive and Pages viewer — run 44832312641](https://github.com/snapquast73-boop/PBPMN/actions/runs/44832312641)
+  — SUCCESS on this branch head (`c9ab938`): offline suite, JS syntax, full re-derivation of
+  the 41 audit rows from MLB with no diff, official archive retrieval and digest verification,
+  and the Chrome walkthrough.
+- [Published site check — run 44832312658](https://github.com/snapquast73-boop/PBPMN/actions/runs/44832312658)
   — PASS 5/5 against the live URL: every published page and asset returns 200 and is
   byte-identical to `origin/main`, 41/41 audit rows cite `statsapi.mlb.com`, both MLB
   endpoints send `Access-Control-Allow-Origin: *` for the Pages origin, and Chrome follows
   the deep link through all four tabs, search, per-row sources and the three downloads with
-  no page errors. [Readable report](https://github.com/snapquast73-boop/PBPMN/commit/ec428069d83e907ff3e8185612136b1fa371e3f9#commitcomment-211115659).
+  no page errors. [Readable report](https://github.com/snapquast73-boop/PBPMN/commit/c9ab938b4ea94380a6da5f4bcad46daebfb83dda#commitcomment-211116955).
 
 ## G. Deployment state
 
