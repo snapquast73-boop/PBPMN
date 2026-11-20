@@ -1,5 +1,6 @@
 import { scheduleURL, feedURL, official } from "./api.js";
 import { esc, plays, pretty, text, records } from "./format.js";
+import { collect, isLive, parseRows, storageKey } from "./eventlog.js";
 const $ = (id) => document.getElementById(id);
 const link = (url, label) => `<a href="${esc(url)}">${esc(label)}</a>`;
 const source = (url) => link(url, "MLB source");
@@ -16,8 +17,8 @@ const localDay = (d) =>
     String(d.getMonth() + 1).padStart(2, "0"),
     String(d.getDate()).padStart(2, "0"),
   ].join("-");
-function table(headers, rows) {
-  if (!rows.length) return "<p>No records supplied by MLB.</p>";
+function table(headers, rows, empty = "No records supplied by MLB.") {
+  if (!rows.length) return `<p>${esc(empty)}</p>`;
   return `<div class="scroll"><table><thead><tr>${[...headers, "Source"].map((v) => `<th>${esc(v)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((v) => `<td>${esc(v)}</td>`).join("")}<td>${source(record.url)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function render() {
@@ -100,6 +101,7 @@ function render() {
       table(
         ["Observed (UTC)", "Change", "Official value"],
         historyRows.map((v) => [v.at, v.kind, v.value]),
+        "No changes observed by this browser. The log records official values seen only while a game was Live.",
       );
   }
   $("content").innerHTML = html;
@@ -129,30 +131,10 @@ function download(kind) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function observe(r, wasLive) {
-  const f = r.data,
-    key = "pbpmn:log:" + f.gamePk;
-  if (f.gameData?.status?.abstractGameState !== "Live" && !wasLive) return;
-  const add = (kind, value) => {
-    if (value == null || value === "") return;
-    const previous = historyRows.findLast((e) => e.kind === kind);
-    if (previous?.value !== value)
-      historyRows.push({ at: r.retrieved, kind, value });
-  };
-  for (const side of ["away", "home"])
-    add(side + " runs", f.liveData?.linescore?.teams?.[side]?.runs);
-  for (const p of plays(f)) {
-    const n = p.about?.atBatIndex;
-    if (n == null) continue;
-    add(`Play ${n} ruling`, p.result?.description);
-    for (const e of p.playEvents ?? [])
-      if (e.isPitch === false && e.index != null)
-        add(`Play ${n} action ${e.index}`, e.details?.description);
-  }
-  for (const field of ["gameEvents", "logicalEvents"])
-    if (f.metaData?.[field]?.length)
-      add(field, JSON.stringify(f.metaData[field]));
+  if (!isLive(r.data) && !wasLive) return;
+  historyRows = collect(r.data, r.retrieved, historyRows, true);
   try {
-    localStorage.setItem(key, JSON.stringify(historyRows));
+    localStorage.setItem(storageKey(r.data.gamePk), JSON.stringify(historyRows));
   } catch {
     storageWarning =
       "Local storage unavailable. New observations are in memory only.";
@@ -230,9 +212,10 @@ async function load() {
       storageWarning = "";
       historyRows = [];
       try {
-        const rows = JSON.parse(localStorage.getItem("pbpmn:log:" + id));
-        if (Array.isArray(rows))
-          historyRows = rows.filter((e) => e && typeof e.kind === "string");
+        const stored = localStorage.getItem(storageKey(id));
+        historyRows = parseRows(stored);
+        if (stored && !historyRows.length)
+          storageWarning = "Stored observations unavailable.";
       } catch {
         storageWarning = "Stored observations unavailable.";
       }

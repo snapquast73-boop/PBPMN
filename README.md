@@ -14,6 +14,19 @@ python -m http.server 8000 --directory docs
 
 Open `http://localhost:8000/`. HTTPS or localhost is required for Web Crypto. Network access to MLB is required to load schedules and games.
 
+## Viewer layout
+
+`docs/index.html` is the viewer. Its modules live in `docs/js/`, the paths the original upload's README documents:
+
+| File | Role |
+| --- | --- |
+| [`docs/js/api.js`](docs/js/api.js) | Official MLB request, provenance and SHA-256 checks |
+| [`docs/js/format.js`](docs/js/format.js) | Text, raw and NDJSON exports |
+| [`docs/js/eventlog.js`](docs/js/eventlog.js) | Event log: the official values a browser observed while a game was Live |
+| [`docs/js/app.js`](docs/js/app.js) | Schedule, game views, search, downloads, refresh |
+
+`node --check docs/js/*.js` parses every module and `node --test tests/test_eventlog.mjs` runs the Event log tests with synthetic fixtures and no network.
+
 ## Archive CLI (Python 3.11+; standard library)
 
 ```sh
@@ -27,7 +40,7 @@ python -m mlb_pbp verify archive
 Omit the dates to archive from 2014-01-01 through today. Schedules are saved by month under `schedules/`. Outputs under `games/`, `raw/` and `events/` are grouped by official date. Raw JSON is compressed unless `--raw-uncompressed` is specified. Manifests retain the MLB notice, URL, UTC retrieval time, and SHA-256 digests. Resume checks existing files. Use `--refresh` to retrieve corrections; verification uses the latest manifest entry for each game or schedule window. Failures go to `errors.ndjson`. Large data archives stay out of Git.
 
 ## Maintenance
-The optional [season-release workflow template](automation/github-actions/archive.yml) is kept outside active workflows so that publishing the viewer does not start bulk downloads. No season release assets are required by the site.
+The optional [season-release workflow template](automation/github-actions/archive.yml) is kept outside active workflows so that publishing the viewer does not start bulk downloads. No season release assets are required by the site. The optional [Actions Pages template](automation/github-actions/pages.yml) is kept there too; the repository publishes `main` at `/` with the built-in builder, so no deployment workflow is active.
 
 `python tools/audit.py` regenerates the historical snapshot from MLB. `python tools/published_check.py` verifies the deployment itself: HTTP status and content type of every published page and asset, byte-for-byte parity with `main`, one `statsapi.mlb.com` source link on each of the 41 audit rows, `Access-Control-Allow-Origin` from MLB for the Pages origin, and a Chrome run of the live URL. The [published-site workflow](.github/workflows/published-site-check.yml) runs it after every successful `github-pages` deployment, daily, and on demand, and posts the report as a commit comment. `python -m unittest discover -s tests` checks the site and archive offline. The [verification workflow](.github/workflows/audit.yml) also exercises real MLB requests. See [coordination and deployment evidence](COORDINATION.md).
 
