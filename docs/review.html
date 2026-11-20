@@ -101,5 +101,26 @@
         the paths, the commands and the documented behaviour could be checked.
       </p>
     </section>
+    <section>
+      <h2>Event log scope</h2>
+      <p>
+        The uploaded README describes the Event log as capturing score changes,
+        official-scorer ruling changes, scoring-pending rulings and boundary
+        calls, each stage of a review, and storing them per game in this
+        browser. What the viewer actually does today is narrower and is
+        <b>verified only in this form</b>: while
+        <a href="https://statsapi.mlb.com/api/v1.1/game/745675/feed/live"
+          >a feed</a
+        >
+        reports <code>Live</code>, it records the two scores, each play’s
+        <code>result.description</code>, non-pitch play events, and MLB’s own
+        <code>gameEvents</code>/<code>logicalEvents</code> markers when an
+        official value changes. It does not label a row as a boundary call, a
+        scoring-pending ruling or a review stage, and it cannot see anything
+        that happened between polls or while the page was closed.
+        <b>Unverified:</b> whether the original log used the same rows or
+        classified those categories at all.
+      </p>
+    </section>
   </main>
 </html>

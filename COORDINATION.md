@@ -226,3 +226,52 @@ Pages template; those stay listed as unverified losses on the review page until 
 
 Status: **in progress** — implementation and verification running; the merge record is appended after the pull request.
 
+
+### Restored files — each one is a line of the original README
+
+The original `README.md` (uploaded in `14c9aaf`, still in git history) is the only surviving specification. Each path and
+command it names was checked against the working tree:
+
+| Original README line | Before this session | Now | Evidence |
+| --- | --- | --- | --- |
+| `node --check docs/js/api.js` (Development and tests) | missing (`docs/api.js`) | `docs/js/api.js` | `node --check docs/js/api.js` in [run 44830512774](https://github.com/snapquast73-boop/PBPMN/actions/runs/44830512774) |
+| `node --check docs/js/format.js` | missing (`docs/format.js`) | `docs/js/format.js` | same run |
+| `node --check docs/js/app.js` | missing (`docs/app.js`) | `docs/js/app.js` | same run |
+| `node --test tests/test_eventlog.mjs` | file and command absent | `tests/test_eventlog.mjs`, 9 tests, synthetic fixtures | `node --test tests/test_eventlog.mjs` locally and in that run |
+| `automation/github-actions/pages.yml` (Repository map) | absent | restored as an inactive template | `python -c "import yaml"`-free syntax check: it is under `automation/`, so it is not executed |
+| `python -m unittest discover -s tests -v`, `python -m compileall -q mlb_pbp` | present | present, 5 tests now | same run |
+| "checks browser JavaScript syntax, and exercises CLI help" (CI) | syntax only | syntax, `node --test`, and `python -m mlb_pbp --help` | [`.github/workflows/audit.yml`](.github/workflows/audit.yml) |
+
+**Behaviour parity, not just paths.** The Event log logic was moved out of `docs/js/app.js` into `docs/js/eventlog.js`
+without changing its output. The inline implementation from `d0d69a2` was extracted with `git show d0d69a2:docs/app.js`
+and run side by side with the module over five synthetic poll sequences (live-only, a score change, a live→final
+transition, missing scores, a preview game). Rows, order, kinds, values and retrieval times were identical in all five;
+the one earlier mismatch was a bug in the throw-away comparison script, not in the module.
+
+**One accuracy defect fixed while extracting.** The Event log reused the table helper's empty message, so an empty log
+read "No records supplied by MLB." — which is not what an empty log means (nothing was observed locally). It now says
+"No changes observed by this browser…". Tables elsewhere are unchanged.
+
+**Verification run in this session:**
+
+- `python -m unittest discover -s tests -v` → 5/5 pass (the new `test_viewer_modules` also proves `docs/` holds no loose
+  `*.js` and every relative `import` target exists).
+- `node --test tests/test_eventlog.mjs` → 9/9 pass; `node --check` on all four modules.
+- A local Pages-style server: 12 URLs 200 with the expected content types, every internal link in all five HTML pages
+  resolves, and every module import resolves.
+- HTML tag-balance check on all five pages: no unclosed or mismatched tags.
+- The published-check tool now (a) lists the five `docs/js` assets, (b) treats a path absent from `main` as parity only
+  when it is absent from the deployment too, and (c) retries 429/5xx before failing. A local server returning 503, 503,
+  200 confirmed the retry (three attempts, then the 200).
+
+**Expected pre-merge red, stated up front.** `Published site check` runs on branch pushes against the *live* site, which
+still serves `main`. Until this branch is merged it must therefore fail on exactly the new expectations (`src="js/app.js"`,
+the four `docs/js` assets, and the browser's module-load assertion); the
+[report on `dbbc048`](https://github.com/snapquast73-boop/PBPMN/commit/dbbc04808891747f439677f0328cc8153c52a0aa#commitcomment-211115505)
+shows only those items failing, with every existing page byte-identical to `main` and all 41 audit rows still sourced.
+The gate for this change is the post-merge deployment run, recorded below.
+
+**Flagged, not silently filled in.** `docs/review.html` gains an "Event log scope" section: the uploaded README's
+description of review stages, scoring-pending rulings and boundary calls is **not** what the reconstructed log
+implements, so it stays published as unverified rather than being restated as a feature.
+
