@@ -24,7 +24,9 @@ permissions:
   deployments: read
 
 concurrency:
-  group: published-site-check
+  # One check per deployed commit or branch. A single shared group let a queued
+  # deployment check be cancelled by any unrelated push to another branch.
+  group: published-site-check-${{ github.event.deployment.sha || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -59,7 +61,7 @@ jobs:
         run: python tools/published_check.py "$URL" --report "$RUNNER_TEMP/report.md"
 
       - name: Post the report as a commit comment
-        if: always() && github.event_name != 'deployment_status'
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

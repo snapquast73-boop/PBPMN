@@ -279,3 +279,39 @@ session's scope, so nothing in it was touched.
 description of review stages, scoring-pending rulings and boundary calls is **not** what the reconstructed log
 implements, so it stays published as unverified rather than being restated as a feature.
 
+### Merge and deployment record
+
+- **Merged.** [PR #9](https://github.com/snapquast73-boop/PBPMN/pull/9) merged into `main` at
+  2026-11-20T22:33:05Z as [`d0d69a2`](https://github.com/snapquast73-boop/PBPMN/commit/d0d69a2f8286b3585f8ba594774e7da753894a94).
+  Pre-merge checks passed: [full verification](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829575460)
+  and [published site check](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829575466).
+- **Deployed.** The [Pages build for `d0d69a2`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829873644)
+  succeeded. Record-only merges from other sessions (#13, #14, #15) changed only `COORDINATION.md` and
+  `VERIFICATION-*.md`, and their builds also succeeded
+  ([`ddeabd8`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44831972896),
+  [`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834520308)).
+  [PR #16](https://github.com/snapquast73-boop/PBPMN/pull/16) (session 7d03b8fa) then restored the
+  `docs/js/` layout the original README names and added the Event log module and its tests; the
+  [Pages API](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds/latest) reports
+  `status: built` for that commit, [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/commit/0fd0faa8354195db755005f764e557682f7b2b4e),
+  at 23:10:52Z. The data rows are unchanged by that layout work.
+- **Post-deployment checks.** The `deployment_status` trigger ran the published-site check against the
+  live deployment of [`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834607476)
+  and of [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834873628); both
+  succeeded (`Verify the published site` passing means every section passed, because the job fails
+  otherwise). For each deployment, however, several queued runs were cancelled first
+  ([`2d1099f`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834574141),
+  [`0fd0faa`](https://github.com/snapquast73-boop/PBPMN/actions/runs/44834859291) among them): one
+  shared concurrency group let any unrelated branch push cancel a queued deployment check. The
+  following pull request gives each deployment commit — and each branch — its own group and posts the
+  readable report for deployment runs too.
+- **Live site.** <https://snapquast73-boop.github.io/PBPMN/> — every page 200, published bytes
+  identical to `main`, 41/41 audit rows citing `statsapi.mlb.com`, both MLB endpoints sending
+  `Access-Control-Allow-Origin: *`, and the Chrome walkthrough passing against the public URL.
+  Readable reports:
+  [pre-layout site](https://github.com/snapquast73-boop/PBPMN/commit/dd40f17a870d193a6925b649398312b830cde54c#commitcomment-211114118)
+  ([run 44829063412](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063412)) and the
+  current `docs/js/` deployment (`0fd0faa`, run above). Local pages-style re-run of the same tool
+  passed 36 assertions before this record was committed.
+- **Pull request for this record and the concurrency fix:**
+  [#17](https://github.com/snapquast73-boop/PBPMN/pull/17).
