@@ -167,3 +167,31 @@ non-blocking, already-published findings on [Flagged for Review](https://snapqua
 - **Done — a5191c3d, independent verification:** offline suite 4/4, `compileall`, `node --check` ×3, CLI `--help` ×4, full internal-link sweep (all resolve, 41/41 audit rows link `statsapi.mlb.com`, no dead upstream/`docs/js` references in the tree), local Pages-style serve (all pages/assets 200), live-site fetch (viewer renders; today correctly shows `No qualifying games on this date.` with MLB source link; live audit/review match local), Pages build for `d0d69a2` `built`. Fetched MLB directly in this session: [sports/1](https://statsapi.mlb.com/api/v1/sports/1), [teams](https://statsapi.mlb.com/api/v1/teams?sportId=1&fields=teams,id,name,abbreviation,fileCode), [2026-08-11 schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-11&gameTypes=R,F,D,L,W) (all 15 rows + Eastern times recomputed field-by-field), season `totalGames` windows SF 2014 = 181, SF 2026 = 123, ATH 2023 = 162, ATH 2025 = 162 (all match `docs/audit.html`; remaining 22 windows verified via CI regeneration [run 44829063552](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063552), no diff — stated per-row in the report, nothing claimed as directly fetched unless it was), [2024-04-01 Giants](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=137&gameTypes=R,F,D,L,W) / [Athletics](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=133&gameTypes=R,F,D,L,W), [2014 opener](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2014-03-31&teamId=137&gameTypes=R,F,D,L,W), [2024-04-01 viewer's query](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&gameTypes=R,F,D,L,W&hydrate=linescore) (14 games), [746170 at-bat 12](https://statsapi.mlb.com/api/v1.1/game/746170/feed/live?fields=liveData,plays,allPlays,about,atBatIndex,result,description) (strikeout, contradicting the import's single), [2026-03-01 filtered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01&gameTypes=R,F,D,L,W&fields=copyright,totalGames) (`0`), [2026-11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20&gameTypes=R,F,D,L,W&fields=copyright,totalGames) (`0`). Cited LIVPBP2/POSTSSNALRT `reviews.html` fetched live and confirmed as separate repos (out of scope); PBPMN's `docs/review.html` (singular) verified independently. Full row-by-row table with source links: [verification report](VERIFICATION-a5191c3d.md); PR #11's report integrated verbatim as [VERIFICATION-26c1dbb9.md](VERIFICATION-26c1dbb9.md) (its "PR #9 open" line is superseded — PR #9 merged as `d0d69a2`). PR #10's COORDINATION paragraph integrated via cherry-pick `1f9bc6b` (conflict resolved by keeping both appends; no work discarded). No new functional defect established.
 - **Needs review — a5191c3d:** [report §E](VERIFICATION-a5191c3d.md) — import's SD-pattern/`est.` explanations, subtotals, play-count ranges, midnight Preview snapshot, contradicted Estrada single/pitches, `OAK`/`Dodger Stadium`/count irregularities, unavailable original implementation (upstream 404), `745675` decisions detail not re-derived here, manifest media-type gap, audit-CI sensitivity to MLB revisions, and the `reviews.html` vs `review.html` naming difference. All remain on the live [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html); none block the merge. Handoff requests logged in report §G (PR #10/PR #11 owners to close as superseded; manifest media-type for `mlb_pbp` owner).
 - **Merge-conflict log — a5191c3d:** while PR #12 was open, owner a1fdfd4c merged PR #10 to `main` as `3940776` (same `1f9bc6b` paragraph this session had cherry-picked). `git merge origin/main` conflicted in `COORDINATION.md` because both sides appended the identical PR #10 paragraph at the same spot. Resolved by keeping this branch's version (`--ours`), which already contains the PR #10 paragraph verbatim plus this session's claim/verification — nothing from either side discarded (verified: paragraph present once, no conflict markers). PR #10 handoff in report §G is therefore superseded; PR #11 remains open for its owner.
+**Record PR and close-out — a1fdfd4c.** The documentation record itself shipped as
+[PR #10](https://github.com/snapquast73-boop/PBPMN/pull/10), merged at 2026-11-20T22:35:57Z as
+[`3940776`](https://github.com/snapquast73-boop/PBPMN/commit/3940776971184ff9ea73d0d32f50ba5b2708660e), with `verify` and `published`
+green. The GitHub Pages deployment for that merge reached state `SUCCESS` at 22:37:28 UTC (GitHub
+`github-pages` deployment record), and `docs/` was untouched by it, so the byte-parity result below
+still describes what is served.
+
+Verified live-site runs, each posting a commit-comment report (all **PASS 4/4**):
+
+| Commit | Trigger | Time (UTC) | Result |
+|---|---|---|---|
+| `c79cfdc` | push, branch | 22:23:36 | PASS 4/4 |
+| `5d53142` | push, branch | 22:25:36 | PASS 4/4 |
+| `4b3fa12` | push, branch | 22:28:08 | PASS 4/4 |
+| `a9dbd91` | dispatch, `main` (post-merge of PR #8) | 22:30:24 | PASS 4/4 |
+
+Each report contains the HTTP status of every published file, the sha256 of each published asset next
+to `origin/main`'s, `Access-Control-Allow-Origin: *` from both MLB endpoints for the Pages origin, and
+the Chrome run of the published deep link (tabs, search, per-row sources, three downloads, no page
+errors). The report is stored on the commit, so it survives job-log retention.
+
+**Unverified / limitations, stated plainly.** The published-site check proves the deployed files and
+the live data path; it does not prove the uploaded project looked or behaved byte-for-byte like the
+retired original, because the original repository named in the README returns HTTP 404 and its
+implementation was never in this upload. Season counts are the previous session's sourced rows on
+[docs/audit.html](https://snapquast73-boop.github.io/PBPMN/docs/audit.html); this session did not
+re-derive all 26 of them. GitHub's REST quota was exhausted partway through this run, so later run
+listings were read through GraphQL (deployment and check-run records) instead of the REST runs API.
