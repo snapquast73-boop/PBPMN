@@ -1,0 +1,67 @@
+# Template — optional GitHub Actions deployment for the static site.
+#
+# The repository's Pages source is already configured as "Deploy from a branch" →
+# main → / (root), and index.html redirects to ./docs/. Use this template only if you
+# prefer an Actions-based deployment:
+#
+#   cp automation/github-actions/pages.yml .github/workflows/pages.yml
+#
+# then set Settings → Pages → Source to "GitHub Actions".
+
+name: Deploy static site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "index.html"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the site before publishing
+        run: |
+          set -euo pipefail
+          for file in index.html docs/index.html docs/methodology.html docs/flagged.html \
+                      docs/css/app.css docs/js/api.js docs/js/format.js docs/js/eventlog.js docs/js/app.js; do
+            test -s "$file" || { echo "missing or empty: $file"; exit 1; }
+          done
+          node --check docs/js/api.js
+          node --check docs/js/app.js
+
+      - name: Stage the publishable tree
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp index.html .nojekyll _site/
+          cp -r docs _site/docs
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

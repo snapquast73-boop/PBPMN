@@ -1,0 +1,143 @@
+# Template — build verified season archives and publish them as GitHub Releases.
+#
+#   cp automation/github-actions/archive.yml .github/workflows/archive.yml
+#
+# Then: Actions → "Build verified season archives" → Run workflow → season `all`.
+# Each completed year is published under the `archive-YYYY` release tag as a tar.gz plus
+# a .sha256 checksum, keeping multi-gigabyte data out of Git history.
+#
+# The daily scheduled run updates the current season and re-fetches its trailing seven days
+# so completed games and official corrections are captured.
+
+name: Build verified season archives
+
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season to build: a year (2014-…) or 'all'"
+        required: true
+        default: "all"
+  schedule:
+    - cron: "17 9 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      seasons: ${{ steps.list.outputs.seasons }}
+    steps:
+      - id: list
+        env:
+          REQUESTED: ${{ github.event.inputs.season }}
+        run: |
+          set -euo pipefail
+          requested="${REQUESTED:-current}"
+          current="$(date -u +%Y)"
+          if [ "$requested" = "all" ]; then
+            seasons=$(python3 -c "import json,os;print(json.dumps([str(y) for y in range(2014, int(os.environ['CURRENT'])+1)]))" CURRENT="$current")
+          elif [ "$requested" = "current" ] || [ -z "$requested" ]; then
+            seasons=$(python3 -c "import json,os;print(json.dumps([os.environ['CURRENT']]))" CURRENT="$current")
+          else
+            seasons=$(python3 -c "import json,sys;print(json.dumps([sys.argv[1]]))" "$requested")
+          fi
+          echo "seasons=$seasons" >> "$GITHUB_OUTPUT"
+
+  archive:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        season: ${{ fromJSON(needs.prepare.outputs.seasons) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the archiver
+        run: python -m pip install -e .
+
+      - name: Restore an existing season asset so the run resumes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEASON: ${{ matrix.season }}
+        run: |
+          set -euo pipefail
+          if gh release view "archive-$SEASON" >/dev/null 2>&1; then
+            gh release download "archive-$SEASON" --pattern "season-$SEASON.tar.gz" --dir . || true
+            if [ -f "season-$SEASON.tar.gz" ]; then
+              tar -xzf "season-$SEASON.tar.gz"
+            fi
+          fi
+
+      - name: Archive the season
+        env:
+          SEASON: ${{ matrix.season }}
+        run: |
+          set -euo pipefail
+          end="${SEASON}-12-31"
+          python -m mlb_pbp archive \
+            --start "${SEASON}-01-01" \
+            --end "$end" \
+            --output "archive-$SEASON" \
+            --formats text,raw,events \
+            --workers 2 \
+            --request-delay 0.2
+
+      - name: Refresh the trailing seven days
+        env:
+          SEASON: ${{ matrix.season }}
+        run: |
+          set -euo pipefail
+          current="$(date -u +%Y)"
+          if [ "$SEASON" != "$current" ]; then
+            echo "not the current season; skipping trailing refresh"
+            exit 0
+          fi
+          end="$(date -u +%Y-%m-%d)"
+          start="$(date -u -d '7 days ago' +%Y-%m-%d)"
+          python -m mlb_pbp archive \
+            --start "$start" \
+            --end "$end" \
+            --output "archive-$SEASON" \
+            --formats text,raw,events \
+            --workers 2 \
+            --request-delay 0.2 \
+            --refresh
+
+      - name: Verify every digest
+        env:
+          SEASON: ${{ matrix.season }}
+        run: python -m mlb_pbp verify "archive-$SEASON"
+
+      - name: Package and checksum
+        env:
+          SEASON: ${{ matrix.season }}
+        run: |
+          set -euo pipefail
+          tar -czf "season-$SEASON.tar.gz" "archive-$SEASON"
+          sha256sum "season-$SEASON.tar.gz" > "season-$SEASON.tar.gz.sha256"
+
+      - name: Publish the release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEASON: ${{ matrix.season }}
+        run: |
+          set -euo pipefail
+          tag="archive-$SEASON"
+          notes="Verified official MLB play-by-play archive for the $SEASON season.
+          Built from https://statsapi.mlb.com only; every record keeps its source URL, the
+          MLB Advanced Media notice, the retrieval time and a SHA-256 digest.
+          Verify locally with: python -m mlb_pbp verify archive-$SEASON"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "season-$SEASON.tar.gz" "season-$SEASON.tar.gz.sha256" --clobber
+          else
+            gh release create "$tag" "season-$SEASON.tar.gz" "season-$SEASON.tar.gz.sha256" \
+              --title "Season archive $SEASON" --notes "$notes"
+          fi

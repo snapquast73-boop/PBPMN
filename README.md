@@ -4,6 +4,8 @@ A searchable web viewer and reproducible archive pipeline for MLB regular-season
 
 **Website:** [buffedlizard55-lab.github.io/MLB-PBP](https://buffedlizard55-lab.github.io/MLB-PBP/)
 
+**This deployment:** [snapquast73-boop.github.io/PBPMN](https://snapquast73-boop.github.io/PBPMN/) serves this repository through GitHub Pages. The interface was rebuilt from the documents here after the uploaded copy arrived without `docs/`, `mlb_pbp/`, `tests/` or `automation/`; what was verified against MLB's official responses, and what is still unconfirmed, is published on the [Flagged for Review](https://snapquast73-boop.github.io/PBPMN/docs/flagged.html) page.
+
 The project uses one baseball-data source: HTTPS responses from MLB's own [`statsapi.mlb.com`](https://statsapi.mlb.com/api/v1/sports/1) domain. It does not invent, estimate, silently repair, or manually enter a score, name, play, or measurement. The raw download is the exact official response body. Human-readable files are deterministic projections of fields in that response.
 
 > This repository does **not** relicense MLB data. Every saved record keeps MLB Advanced Media's returned notice, exact source URL, UTC retrieval time, and a SHA-256 digest. Users are responsible for complying with MLB's terms.

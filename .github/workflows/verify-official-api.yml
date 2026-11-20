@@ -1,0 +1,68 @@
+name: Verify official API and live site
+
+# Evidence run for the claims recorded in COORDINATION.md §4 and on docs/flagged.html.
+# It makes the same requests a visitor's browser makes and prints the headers and checks,
+# so the result can be reviewed from the public run log.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Official endpoints and deployed site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Official notice and CORS on the schedule endpoint
+        run: |
+          set -euo pipefail
+          url='https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-08-11&endDate=2026-08-11&gameTypes=R,F,D,L,W&hydrate=linescore'
+          code=$(curl -sS -D headers.txt -o schedule.json -w '%{http_code}' "$url")
+          echo "GET $url"
+          echo "HTTP $code"
+          echo '--- response headers (CORS) ---'
+          grep -i -E '^access-control-allow-origin|^content-type' headers.txt || true
+          test "$code" = "200" || { echo 'unexpected status'; exit 1; }
+          grep -qi '^access-control-allow-origin: *\*' headers.txt \
+            || { echo 'no permissive CORS header: the browser viewer cannot read this response'; exit 1; }
+          grep -q 'MLB Advanced Media, L.P.' schedule.json \
+            || { echo 'missing MLB Advanced Media notice'; exit 1; }
+          echo "totalGames=$(python3 -c "import json;print(json.load(open('schedule.json')).get('totalGames'))")"
+
+      - name: Official game feed identity
+        run: |
+          set -euo pipefail
+          url='https://statsapi.mlb.com/api/v1.1/game/746170/feed/live'
+          curl -sS -D feed-headers.txt -o feed.json "$url"
+          grep -i '^access-control-allow-origin' feed-headers.txt || true
+          python3 - <<'PY'
+          import json, hashlib, sys
+          body = open('feed.json', 'rb').read()
+          feed = json.loads(body)
+          print('gamePk:', feed.get('gamePk'))
+          print('gameData.game.pk:', feed.get('gameData', {}).get('game', {}).get('pk'))
+          print('copyright:', feed.get('copyright'))
+          print('sha256:', hashlib.sha256(body).hexdigest())
+          print('allPlays:', len(feed.get('liveData', {}).get('plays', {}).get('allPlays', [])))
+          print('metaData.wait:', feed.get('metaData', {}).get('wait'))
+          assert feed.get('gamePk') == 746170, 'gamePk mismatch'
+          assert 'MLB Advanced Media, L.P.' in (feed.get('copyright') or ''), 'missing notice'
+          PY
+
+      - name: Deployed GitHub Pages site
+        run: |
+          set -euo pipefail
+          base='https://snapquast73-boop.github.io/PBPMN'
+          for path in / /docs/ /docs/methodology.html /docs/flagged.html /docs/css/app.css /docs/js/app.js; do
+            code=$(curl -sS -o /tmp/page -w '%{http_code}' "$base$path")
+            echo "GET $base$path -> $code"
+            test "$code" = "200" || { echo "not served: $path"; exit 1; }
+            test -s /tmp/page || { echo "empty body: $path"; exit 1; }
+          done
+          curl -sS "$base/docs/" | grep -q 'MLB Plaintext Archive' \
+            || { echo 'viewer markup not found'; exit 1; }
+          echo 'live site serves the viewer, methodology and flagged pages'

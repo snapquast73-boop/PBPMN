@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data &amp; methodology — MLB Plaintext Archive</title>
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <p class="brand"><a href="./">MLB Plaintext Archive</a></p>
+      <nav class="site-nav">
+        <a href="./">Games</a>
+        <a href="./methodology.html">Data &amp; methodology</a>
+        <a href="./flagged.html">Flagged for Review</a>
+        <a href="https://github.com/snapquast73-boop/PBPMN" rel="noopener noreferrer">Repository</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap doc">
+    <h1>Data &amp; methodology</h1>
+
+    <p>
+      This site is a viewer. It holds no baseball data of its own. Each page load asks MLB's
+      Stats API for one date's schedule and, when you open a game, for that game's official
+      feed. The response is rendered as received.
+    </p>
+
+    <h2>1. The only source</h2>
+    <table>
+      <thead><tr><th>Purpose</th><th>Request</th><th>Documented by</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Schedule for one date</td>
+          <td><code>GET https://statsapi.mlb.com/api/v1/schedule?sportId=1&amp;startDate=YYYY-MM-DD&amp;endDate=YYYY-MM-DD&amp;gameTypes=R,F,D,L,W&amp;hydrate=linescore</code></td>
+          <td>Response observed live; see <a href="./flagged.html">Flagged for Review</a> row V2</td>
+        </tr>
+        <tr>
+          <td>One game, complete</td>
+          <td><code>GET https://statsapi.mlb.com/api/v1.1/game/{gamePk}/feed/live</code></td>
+          <td>Response observed live; row V4</td>
+        </tr>
+        <tr>
+          <td>Sport identity check</td>
+          <td><code>GET https://statsapi.mlb.com/api/v1/sports/1</code></td>
+          <td>Row V1 — returns "Major League Baseball", id 1</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2. Scope</h2>
+    <ul>
+      <li><code>sportId=1</code> (Major League Baseball).</li>
+      <li>Game types <code>R</code> (regular season), <code>F</code> (wild card),
+        <code>D</code> (division series), <code>L</code> (league championship series) and
+        <code>W</code> (World Series).</li>
+      <li>Dates from <code>2014-01-01</code> forward. Dates before Opening Day legitimately
+        contain no qualifying game, and the page says so rather than substituting anything.</li>
+      <li>Spring Training, exhibition games and the All-Star Game are outside the requested
+        scope.</li>
+    </ul>
+
+    <h2>3. Acceptance rules</h2>
+    <p>A response is used only if all four checks pass:</p>
+    <ol>
+      <li>the URL is HTTPS on the exact host <code>statsapi.mlb.com</code> (checked before the
+        request is made);</li>
+      <li>the HTTP status is successful and the body parses as JSON;</li>
+      <li>the body carries MLB Advanced Media's notice — the string
+        <code>MLB Advanced Media, L.P.</code> must appear in <code>copyright</code>;</li>
+      <li>a game feed's <code>gamePk</code> — and, when present,
+        <code>gameData.game.pk</code> — equals the requested <code>gamePk</code>.</li>
+    </ol>
+    <p>
+      A failed check produces an explicit error in the status line. The page never falls back to
+      a cached copy, a sample game or a computed substitute.
+    </p>
+
+    <h2>4. What is displayed</h2>
+    <table>
+      <thead><tr><th>View</th><th>Official fields used</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Schedule</td>
+          <td><code>dates[].games[].gameDate</code>, <code>teams.away/home.team.name</code>,
+            <code>teams.away/home.score</code>, <code>status.abstractGameState</code>,
+            <code>status.detailedState</code>, <code>venue.name</code>, <code>gamePk</code>,
+            <code>gameType</code></td>
+        </tr>
+        <tr>
+          <td>Line score</td>
+          <td><code>liveData.linescore.innings[].{num,away{runs,hits,errors,leftOnBase},home{…}}</code>,
+            <code>liveData.linescore.teams.{away,home}.{runs,hits,errors,leftOnBase}</code>,
+            <code>liveData.linescore.note</code>, <code>currentInning</code>,
+            <code>inningState</code></td>
+        </tr>
+        <tr>
+          <td>Play-by-play</td>
+          <td><code>liveData.plays.allPlays[].about.{inning,halfInning,atBatIndex,isScoringPlay,isComplete}</code>,
+            <code>result.{event,description,awayScore,homeScore}</code>,
+            <code>count.{balls,strikes,outs}</code>,
+            <code>matchup.{batter,pitcher}.fullName</code>,
+            <code>playEvents[].details{pitchData,hitData}</code>,
+            <code>runners[].{movement,details}</code></td>
+        </tr>
+        <tr>
+          <td>Decisions</td>
+          <td><code>liveData.decisions.{winner,loser,save}.fullName</code> — absent values are
+            reported as not supplied</td>
+        </tr>
+        <tr>
+          <td>Box score</td>
+          <td><code>liveData.boxscore.teams.{away,home}.battingOrder</code>,
+            <code>pitchers</code>, <code>players["ID&lt;pk&gt;"].{person.fullName,position.abbreviation,stats.batting,stats.pitching,seasonStats.batting.avg}</code></td>
+        </tr>
+        <tr>
+          <td>Live refresh</td>
+          <td><code>metaData.wait</code> — the interval in seconds that MLB's own feed returns</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Average column</h3>
+    <p>
+      In-game batting splits returned by MLB do not include a batting average, on-base or slugging
+      figure; only the season split (<code>seasonStats.batting.avg</code>) does. The AVG column
+      therefore shows the season average supplied by MLB and nothing else. It is never computed
+      on this page.
+    </p>
+
+    <h2>5. Event log</h2>
+    <p>
+      While a game is Live the page re-requests the official feed at the interval MLB supplies.
+      Each poll is reduced to a snapshot and compared with the previous one. Recorded changes:
+    </p>
+    <ul>
+      <li><strong>game-state</strong> — <code>status.detailedState</code> changed;</li>
+      <li><strong>score</strong> — a side's <code>runs</code> in
+        <code>liveData.linescore.teams</code> changed;</li>
+      <li><strong>scoring-pending</strong> — a play appears with
+        <code>about.isComplete = false</code> (the official ruling is not final);</li>
+      <li><strong>ruling-resolved</strong> — that play later reports
+        <code>about.isComplete = true</code>;</li>
+      <li><strong>ruling-change</strong> — an existing play's
+        <code>result.event</code>, <code>result.eventType</code> or
+        <code>result.description</code> changed between polls;</li>
+      <li><strong>review-open</strong> / <strong>review-decided</strong> —
+        <code>about.hasReview</code> with <code>reviewDetails.inProgress</code>, and the
+        <code>reviewDetails</code> verdict (<code>isOverturned</code>,
+        <code>reviewType</code>) copied verbatim.</li>
+    </ul>
+    <p>
+      The log is stored in this browser under
+      <code>mlb-pbp:eventlog:v1:&lt;gamePk&gt;</code>. It is never sent to a server and never
+      written into the repository. It is a record of what the page watched, not an official
+      document.
+    </p>
+
+    <h2>6. Downloads</h2>
+    <table>
+      <thead><tr><th>File</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;gamePk&gt;.txt</code></td>
+          <td>Readable report: provenance, game header, line score, decisions, play-by-play with
+            every pitch/action and runner movement, box score.</td></tr>
+        <tr><td><code>&lt;gamePk&gt;.json</code></td>
+          <td>The exact response text, byte for byte, with its SHA-256 shown in the report.</td></tr>
+        <tr><td><code>&lt;gamePk&gt;.events.ndjson</code></td>
+          <td>One JSON record per line: <code>metadata</code>, then one <code>play</code> per at-bat,
+            then one <code>event</code> per pitch or action.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>7. Limitations</h2>
+    <ul>
+      <li>If MLB changes a completed game after you downloaded it, your copy is the older
+        official response. Re-open the game to fetch the current one.</li>
+      <li>The page depends on MLB continuing to serve these endpoints with a permissive CORS
+        header; both were verified (see Flagged for Review, row V19) and both are outside this
+        project's control.</li>
+      <li>Times are shown in your browser's local time zone, labelled with that zone; the
+        official UTC timestamp is in the downloaded report.</li>
+      <li>No value is ever inferred. Where MLB omits a field, the interface states the omission
+        instead of guessing.</li>
+    </ul>
+
+    <h2>8. Rights</h2>
+    <p>
+      The code in this repository is MIT licensed. That licence covers the code, not MLB content.
+      Every response keeps MLB Advanced Media's own notice, and MLB data remains subject to
+      MLB's terms. This independent project is not affiliated with or endorsed by Major League
+      Baseball.
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><a href="./">Back to the archive</a></p>
+    </div>
+  </footer>
+</body>
+</html>

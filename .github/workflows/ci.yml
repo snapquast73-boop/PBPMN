@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests, compile and syntax checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the package (no runtime dependencies)
+        run: python -m pip install --upgrade pip setuptools && python -m pip install -e .
+
+      - name: Python tests
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Compile the package
+        run: python -m compileall -q mlb_pbp
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Browser JavaScript syntax
+        run: |
+          set -euo pipefail
+          for file in docs/js/api.js docs/js/format.js docs/js/eventlog.js docs/js/app.js; do
+            echo "checking $file"
+            node --check "$file"
+          done
+
+      - name: Browser module tests
+        run: node --test tests/test_eventlog.mjs tests/test_format.mjs
+
+      - name: CLI help
+        run: python -m mlb_pbp --help
+
+      - name: Static site assets are present
+        run: |
+          set -euo pipefail
+          for file in index.html docs/index.html docs/methodology.html docs/flagged.html \
+                      docs/css/app.css docs/js/api.js docs/js/format.js docs/js/eventlog.js docs/js/app.js; do
+            test -s "$file" || { echo "missing or empty: $file"; exit 1; }
+            echo "ok $file"
+          done

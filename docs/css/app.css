@@ -1,0 +1,322 @@
+/* docs/css/app.css — dependency-free stylesheet for the static viewer. */
+
+:root {
+  --ink: #14202b;
+  --ink-soft: #4a5a68;
+  --paper: #fbfaf7;
+  --panel: #ffffff;
+  --line: #d9d5cc;
+  --accent: #0b5f8a;
+  --accent-soft: #e6f1f7;
+  --warn: #8a3b0b;
+  --warn-soft: #fdf1e6;
+  --ok: #1f6b3a;
+  --ok-soft: #e9f5ee;
+  --error: #8a1f1f;
+  --error-soft: #fceceb;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.wrap { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+
+code, .mono { font-family: var(--mono); font-size: 0.9em; }
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.site-header .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.9rem 0;
+}
+
+.brand { margin: 0; font-weight: 700; letter-spacing: 0.01em; }
+.brand a { color: var(--ink); text-decoration: none; }
+
+.site-nav { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.92rem; }
+.site-nav a { text-decoration: none; }
+.site-nav a:hover { text-decoration: underline; }
+
+main { padding: 1.75rem 0 3rem; }
+
+.intro h1 { font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem); margin: 0 0 0.5rem; }
+.intro p { max-width: 62ch; color: var(--ink-soft); margin: 0 0 1.25rem; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+#date-form { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+#date-form label { font-weight: 600; font-size: 0.9rem; }
+
+input[type="date"], input[type="search"] {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+}
+
+button {
+  font: inherit;
+  padding: 0.45rem 0.9rem;
+  border-radius: 7px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.08); }
+button:focus-visible, input:focus-visible, tr[data-gamepk]:focus-visible {
+  outline: 3px solid #8ec6e6;
+  outline-offset: 2px;
+}
+button.ghost { background: #fff; color: var(--accent); }
+button.link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.hint { margin: 0; max-width: 48ch; font-size: 0.85rem; color: var(--ink-soft); }
+
+.status {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 0.88rem;
+  word-break: break-word;
+}
+.status.info { background: var(--accent-soft); border-color: #bcd9e8; }
+.status.ok { background: var(--ok-soft); border-color: #bfe0cb; color: #164a2a; }
+.status.error { background: var(--error-soft); border-color: #e7c3c1; color: var(--error); }
+
+.panel {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow-x: auto;
+}
+
+.muted { color: var(--ink-soft); font-size: 0.9rem; }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+caption { text-align: left; font-weight: 600; padding-bottom: 0.35rem; }
+
+th, td { padding: 0.35rem 0.45rem; border-bottom: 1px solid var(--line); text-align: center; }
+th.team, td.team, th.name, td.name { text-align: left; }
+thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+table.schedule tbody tr { cursor: pointer; }
+table.schedule tbody tr:hover { background: var(--accent-soft); }
+table.schedule tbody tr.current { background: var(--accent-soft); font-weight: 600; }
+table.linescore td.tot, table.linescore th.tot { font-weight: 700; background: #f7f6f2; }
+table.stats td.name { white-space: nowrap; }
+.pos { color: var(--ink-soft); font-size: 0.78rem; }
+
+#game-title { margin: 0 0 0.35rem; font-size: 1.2rem; }
+
+.game-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  align-items: center;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.9rem;
+}
+
+.badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--ink);
+  background: #f4f2ec;
+}
+.badge.live { background: var(--warn-soft); border-color: #e8c9a9; color: var(--warn); }
+.badge.final { background: #eef0f3; }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem;
+}
+
+.tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.tabs button {
+  background: #fff;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+.tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.downloads { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.downloads button { font-size: 0.85rem; padding: 0.35rem 0.7rem; }
+
+.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+.search-row label { font-size: 0.86rem; font-weight: 600; }
+#search { flex: 1 1 18rem; }
+
+.game-body { padding-top: 0.25rem; }
+
+.inning { margin-top: 1rem; }
+.inning h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.86rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.2rem;
+}
+
+ol.plays, ul.events, ul.runners, ol.eventlog { list-style: none; margin: 0; padding: 0; }
+
+li.play {
+  padding: 0.55rem 0 0.55rem 0.65rem;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid #efede7;
+}
+li.play.scoring { border-left-color: #d5a021; background: #fffdf3; }
+.play-index { font-family: var(--mono); color: var(--ink-soft); font-size: 0.82rem; }
+.count { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); }
+.description { margin: 0.2rem 0; }
+.matchup { margin: 0; font-size: 0.82rem; color: var(--ink-soft); }
+
+ul.events, ul.runners {
+  margin: 0.35rem 0 0;
+  padding-left: 0.1rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+}
+ul.events li, ul.runners li { padding: 0.1rem 0; }
+.ev-label { display: inline-block; min-width: 4.6rem; color: var(--ink); }
+.ev-meta { color: #6d7d8a; }
+
+dl.decisions {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.15rem 0.9rem;
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+dl.decisions dt { font-weight: 600; }
+dl.decisions dd { margin: 0; }
+
+ol.eventlog li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #efede7;
+  font-size: 0.88rem;
+}
+ol.eventlog time { font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); }
+.tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: #eeece6;
+  color: var(--ink-soft);
+}
+.kind-score .tag { background: var(--ok-soft); color: var(--ok); }
+.kind-review-open .tag, .kind-review-decided .tag { background: var(--warn-soft); color: var(--warn); }
+.kind-ruling-change .tag, .kind-scoring-pending .tag { background: var(--accent-soft); color: var(--accent); }
+
+.notes { margin-top: 2rem; }
+.notes h2 { font-size: 1.05rem; }
+.notes ul { color: var(--ink-soft); font-size: 0.92rem; }
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  padding: 1rem 0;
+}
+
+/* Documentation pages (methodology.html, flagged.html) */
+.doc { max-width: 76ch; }
+.doc h1 { font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); margin-top: 1.4rem; }
+.doc h2 { font-size: 1.12rem; margin-top: 1.9rem; }
+.doc h3 { font-size: 0.98rem; margin-top: 1.4rem; }
+.doc table { margin: 0.75rem 0 1.25rem; }
+.doc th, .doc td { text-align: left; vertical-align: top; }
+.doc td code, .doc th code { word-break: break-all; }
+.doc .callout {
+  border-left: 4px solid #d5a021;
+  background: #fffdf3;
+  padding: 0.7rem 0.9rem;
+  margin: 1rem 0;
+}
+.doc .flag { border-left-color: var(--warn); background: var(--warn-soft); }
+.status-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.08rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.status-pill.verified { background: var(--ok-soft); color: var(--ok); }
+.status-pill.unverified { background: var(--error-soft); color: var(--error); }
+.status-pill.estimated { background: var(--warn-soft); color: var(--warn); }
+
+@media (max-width: 640px) {
+  .wrap { width: calc(100% - 1.5rem); }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  table { font-size: 0.84rem; }
+  th, td { padding: 0.28rem 0.3rem; }
+}

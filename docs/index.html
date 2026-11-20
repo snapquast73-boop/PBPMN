@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MLB Plaintext Archive — official play-by-play viewer</title>
+  <meta name="description" content="Searchable plaintext viewer for MLB regular-season and postseason games from 2014 forward, built only from MLB's official Stats API responses.">
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <p class="brand"><a href="./">MLB Plaintext Archive</a></p>
+      <nav class="site-nav">
+        <a href="./">Games</a>
+        <a href="./methodology.html">Data &amp; methodology</a>
+        <a href="./flagged.html">Flagged for Review</a>
+        <a href="https://github.com/snapquast73-boop/PBPMN" rel="noopener noreferrer">Repository</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <h1>Official play-by-play, plain text</h1>
+      <p>
+        Every value on this page is read from MLB's own
+        <a href="https://statsapi.mlb.com/api/v1/sports/1" rel="noopener noreferrer">statsapi.mlb.com</a>
+        response for the date you choose. Nothing is estimated, repaired or entered by hand.
+        If MLB does not return a value, the page says so.
+      </p>
+    </section>
+
+    <section class="controls">
+      <form id="date-form" autocomplete="off">
+        <label for="date">Official date</label>
+        <input type="date" id="date" name="date" required>
+        <button type="submit">Load schedule</button>
+      </form>
+      <p class="hint">
+        Regular season and postseason only: MLB game types <code>R</code>, <code>F</code>,
+        <code>D</code>, <code>L</code>, <code>W</code>. Spring Training, exhibitions and the
+        All-Star Game are excluded by request, not by omission.
+      </p>
+    </section>
+
+    <p id="status" class="status" hidden></p>
+
+    <section id="schedule" class="panel" aria-live="polite">
+      <p class="muted">Enter a date to request the official schedule.</p>
+    </section>
+
+    <section id="game" class="panel" hidden>
+      <h2 id="game-title">Game</h2>
+      <div id="game-meta" class="game-meta"></div>
+
+      <div class="toolbar">
+        <div id="tabs" class="tabs" role="tablist" aria-label="Game views">
+          <button type="button" data-tab="plays" role="tab" aria-selected="true" class="active">Play-by-play</button>
+          <button type="button" data-tab="linescore" role="tab" aria-selected="false">Line score</button>
+          <button type="button" data-tab="boxscore" role="tab" aria-selected="false">Box score</button>
+          <button type="button" data-tab="eventlog" role="tab" aria-selected="false">Event log</button>
+        </div>
+        <div class="downloads">
+          <button type="button" id="download-text" class="ghost">Download .txt</button>
+          <button type="button" id="download-json" class="ghost">Download .json</button>
+          <button type="button" id="download-ndjson" class="ghost">Download .ndjson</button>
+        </div>
+      </div>
+
+      <div id="search-row" class="search-row">
+        <label for="search">Search this game</label>
+        <input type="search" id="search" placeholder="player name or description wording">
+      </div>
+
+      <div id="game-body" class="game-body" aria-live="polite"></div>
+    </section>
+
+    <section class="notes">
+      <h2>What this page does not do</h2>
+      <ul>
+        <li>It does not cache a copy of MLB data on a server. The request goes from your browser to
+          <code>statsapi.mlb.com</code> and nowhere else.</li>
+        <li>It does not show a sample score, a placeholder play or a fallback dataset.</li>
+        <li>It does not send anything about you or your session anywhere. The Event log stays in this
+          browser's <code>localStorage</code>.</li>
+      </ul>
+      <p class="muted">
+        MLB data remains subject to the notice returned by MLB Advanced Media, L.P. This independent
+        project is not affiliated with or endorsed by Major League Baseball. See
+        <a href="./methodology.html">data &amp; methodology</a> for exact endpoints, validation rules and limits.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Static site · no server · no analytics · MIT-licensed code, MLB data used under MLB's own terms.</p>
+    </div>
+  </footer>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/format.js"></script>
+  <script src="./js/eventlog.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
