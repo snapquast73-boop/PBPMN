@@ -67,3 +67,7 @@ byte-for-byte parity of `docs/` assets with `origin/main`, `Access-Control-Allow
 `statsapi.mlb.com` for the Pages origin, and a Chrome run of the published viewer
 (deep link → tabs → search → per-row source links → three downloads). The workflow posts that report
 as a commit comment, so the evidence is readable independently of job-log retention.
+
+## Session 26c1dbb9 — independent line-by-line verification (2026-11-20)
+
+- **In progress — 26c1dbb9 (2026-11-20):** independent read-only review of the integrated site, audit rows and offline tests; scope: `VERIFICATION-26c1dbb9.md` and this appended coordination entry only. No application, data, navigation or styling changes. Existing restoration (8f074539), published-check (a1fdfd4c) and hardening (17011489, PR #9 open) scopes are left untouched; any defect found in another owner's scope will be logged here for handoff, not edited. Arena requires the assigned `arena/26c1dbb9-pbpmn` branch, so no extra session branch is created. This session will not merge PR #9 or duplicate its merge.
