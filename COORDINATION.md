@@ -67,3 +67,76 @@ byte-for-byte parity of `docs/` assets with `origin/main`, `Access-Control-Allow
 `statsapi.mlb.com` for the Pages origin, and a Chrome run of the published viewer
 (deep link → tabs → search → per-row source links → three downloads). The workflow posts that report
 as a commit comment, so the evidence is readable independently of job-log retention.
+
+---
+
+## Session 17011489 — independent verification, hardening and merge (2026-11-20)
+
+**Claim (narrow, non-overlapping):** verify the integrated deployment against official MLB responses
+and the live Pages URL, adopt session a1fdfd4c's published-site tool instead of duplicating it,
+extend it, and record the merge and deploy. Files touched: `tools/published_check.py`,
+`.github/workflows/published-site-check.yml`, `README.md`, `COORDINATION.md`. No site data,
+navigation, styling or browser behaviour is changed by this session. Its first, independent draft of
+the same tool (commit `4e2e1c5` on this branch) was withdrawn once a1fdfd4c's version was found;
+nothing of theirs was discarded.
+
+**Adopted and extended.** a1fdfd4c's tool and workflow (merged in PR #8) are the base. This session
+adds: byte-for-byte comparison of the published **HTML pages** as well as the assets, so a stale
+deployment cannot pass; a live check that each of the **41 audit rows** still carries a
+`statsapi.mlb.com` link (the offline rule in `tests/test_site.py`, now enforced against the
+deployment); and automatic execution after every successful `github-pages` deployment through a
+`deployment_status` trigger, with the deployed commit checked out for a valid byte comparison.
+
+### Independent official-source checks
+
+Every row was fetched directly from MLB's own endpoint in this session; no value is inferred, and a
+value no official response supports is left out rather than filled in.
+
+| Check | Official source | Result |
+|---|---|---|
+| `sportId=1` is Major League Baseball | [sports/1](https://statsapi.mlb.com/api/v1/sports/1) | `id 1`, `name "Major League Baseball"`, `abbreviation "MLB"` |
+| Club IDs used by the audit | [teams?sportId=1&fields=…](https://statsapi.mlb.com/api/v1/teams?sportId=1&fields=teams,id,name,abbreviation,fileCode) | `137` San Francisco Giants (`SF`/`sf`); `133` Athletics (`ATH`/`ath`); no `oak` code today |
+| `gameTypes=R,F,D,L,W` excludes Spring Training | [2026-03-01 unfiltered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01) (16 games, all `gameType S`) vs [filtered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01&gameTypes=R,F,D,L,W) (0) | Confirmed |
+| The viewer's own schedule query | [2024-04-01](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&gameTypes=R,F,D,L,W&hydrate=linescore) | 14 games |
+| Giants example `746170`, SF 3 @ LAD 8, Dodger Stadium | [teamId=137, 2024-04-01](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=137&gameTypes=R,F,D,L,W) | Confirmed |
+| Athletics example `745675`, BOS 9 @ Oakland Athletics 0, Oakland Coliseum | [teamId=133, 2024-04-01](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=133&gameTypes=R,F,D,L,W) | Confirmed |
+| Imported 2014 opener `380550`, SF 9 @ ARI 8, Chase Field | [teamId=137, 2014-03-31](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2014-03-31&teamId=137&gameTypes=R,F,D,L,W) | Confirmed |
+| `2026-08-11` has 15 games; `824970` TB @ ATH; `823186` HOU @ SF | [2026-08-11](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-11&gameTypes=R,F,D,L,W) | Confirmed; all 15 now `Final` |
+| Imported venue "Dodger Stadium" for `823917` | same response | **Irregular:** MLB returns `UNIQLO Field at Dodger Stadium`; the published audit row uses MLB's name |
+| Season `totalGames` spot checks: SF 2014 = 181, SF 2026 = 123, ATH 2023 = 162, ATH 2025 = 162 | [SF 2014](https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameTypes=R,F,D,L,W&teamId=137&startDate=2014-01-01&endDate=2014-12-31&fields=copyright,totalGames), [SF 2026](https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameTypes=R,F,D,L,W&teamId=137&startDate=2026-01-01&endDate=2026-08-11&fields=copyright,totalGames), [ATH 2023](https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameTypes=R,F,D,L,W&teamId=133&startDate=2023-01-01&endDate=2023-12-31&fields=copyright,totalGames), [ATH 2025](https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameTypes=R,F,D,L,W&teamId=133&startDate=2025-01-01&endDate=2025-12-31&fields=copyright,totalGames) | All four match the published rows |
+| All 41 published rows still reconcile with MLB | `python tools/audit.py` + `git diff --exit-code docs/audit.html` in [run 44829063552](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063552) | Regenerated with no diff |
+| Viewer default date (today, 2026-11-20) has no games | [2026-11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20&gameTypes=R,F,D,L,W&fields=copyright,totalGames) | `totalGames: 0`; the page states that instead of substituting data |
+
+**Still unverified or irregular (published for review, not restated as fact):** the import's
+`2023 162 (verified via SD schedule pattern)`, `2025 162 (est.)`, subtotals `≈2,009`/`≈2,024`/`~4,033`
+and "typically 65–85 plays, 250–340 playEvents"; its midnight `Preview` snapshot of 2026-08-11 and
+"empty feeds" claim, which cannot be checked after the fact; and the original implementation, whose
+upstream [`buffedlizard55-lab/MLB-PBP`](https://api.github.com/repos/buffedlizard55-lab/MLB-PBP)
+endpoint returns HTTP 404, so appearance, `docs/js/` layout and formatter bytes stay unverified.
+These remain on the [Flagged for Review page](docs/review.html).
+
+### Published evidence
+
+- Live site <https://snapquast73-boop.github.io/PBPMN/>; publishing source `main`, path `/`,
+  `build_type=legacy` ([Pages API](https://api.github.com/repos/snapquast73-boop/PBPMN/pages)).
+- [Published site check, run 44829063412](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063412)
+  — PASS 5/5 against the live URL: five pages and four assets return 200 and are byte-identical to
+  `main`, 41/41 rows cite `statsapi.mlb.com`, both MLB endpoints send
+  `Access-Control-Allow-Origin: *`, and Chrome follows `?date=2024-04-01&game=745675` through four
+  views, search, per-row sources and three downloads with no page errors.
+  [Readable report](https://github.com/snapquast73-boop/PBPMN/commit/dd40f17a870d193a6925b649398312b830cde54c#commitcomment-211114118).
+- [Full verification, run 44829063552](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063552)
+  — offline suite, JavaScript syntax, full re-derivation of the 41 rows from MLB with no diff,
+  official archive retrieval and digest verification, and the Chrome walkthrough.
+- Before pushing, the extended tool was run against a Pages-style local server
+  (`python -m http.server` over the repository parent): 5 pages + 4 assets byte-identical, every
+  internal link 200, 41 sourced rows (35 assertions).
+
+### Merge record
+
+- Pull request: [#9](https://github.com/snapquast73-boop/PBPMN/pull/9) (this branch → `main`).
+  Checks before merge: `verify` and `published` both passed
+  ([run 44829362749](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829362749),
+  [run 44829362731](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829362731)).
+- Merge commit, Pages deployment and the post-deploy published-site check are appended below once
+  they exist.

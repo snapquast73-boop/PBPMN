@@ -7,11 +7,13 @@ Checks, in order:
 
 1. the root URL still redirects into ``docs/`` and carries the query string;
 2. every published page and asset returns 200 with the expected content type;
-3. published bytes match ``origin/main`` byte for byte (proves Pages is serving
-   the merged commit, not a stale or partial build);
-4. MLB's endpoints return ``Access-Control-Allow-Origin`` for the Pages origin, so
+3. published bytes match ``origin/main`` byte for byte for the pages and the
+   assets (proves Pages is serving the merged commit, not a stale build);
+4. every published table row on the schedule audit still cites
+   ``statsapi.mlb.com`` -- the same rule ``tests/test_site.py`` applies offline;
+5. MLB's endpoints return ``Access-Control-Allow-Origin`` for the Pages origin, so
    the browser-side fetch in ``docs/api.js`` can work at all;
-5. optionally, a real Chrome run of the published site (deep link, tabs, search,
+6. optionally, a real Chrome run of the published site (deep link, tabs, search,
    source links, downloads) via ``tools/browser_check.py``.
 
 Usage::
@@ -34,7 +36,9 @@ import traceback
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 DEFAULT_BASE = "https://snapquast73-boop.github.io/PBPMN/"
 PAGES_ORIGIN = "https://snapquast73-boop.github.io"
@@ -42,6 +46,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 PAGES = ["", "docs/", "docs/index.html", "docs/methodology.html", "docs/audit.html", "docs/review.html"]
 ASSETS = ["docs/style.css", "docs/api.js", "docs/app.js", "docs/format.js"]
+#: URL path -> file in the repository (directory URLs serve their index page).
+GIT_PATH = {"": "index.html", "docs/": "docs/index.html"}
+AUDIT_ROWS = 41
+OFFICIAL_HOST = "statsapi.mlb.com"
 
 MLB_SCHEDULE = (
     "https://statsapi.mlb.com/api/v1/schedule?"
@@ -123,13 +131,34 @@ def check_pages(base: str) -> Result:
     return result
 
 
+class Table(HTMLParser):
+    """Collect one list of source links per data row."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.rows: list[list[str]] = []
+        self.row: list[str] | None = None
+
+    def handle_starttag(self, tag, attrs):
+        data = dict(attrs)
+        if tag == "td" and self.row is None:
+            self.row = []
+        if tag == "a" and self.row is not None:
+            self.row.append(data.get("href", ""))
+
+    def handle_endtag(self, tag):
+        if tag == "tr" and self.row is not None:
+            self.rows.append(self.row)
+            self.row = None
+
+
 def check_assets(base: str) -> Result:
-    result = Result("Assets match main byte for byte")
-    for path in ASSETS:
+    result = Result("Published pages and assets match main byte for byte")
+    for path in PAGES + ASSETS:
         url = base + path
         status, headers, body = http_get(url)
         published = hashlib.sha256(body).hexdigest()
-        expected_bytes = git_blob(path)
+        expected_bytes = git_blob(GIT_PATH.get(path, path))
         if expected_bytes is None:
             result.add(status == 200, f"`{path}` → {status} (no `origin/main` copy to compare)")
             continue
@@ -138,6 +167,24 @@ def check_assets(base: str) -> Result:
             status == 200 and published == expected,
             f"`{path}` → {status}; sha256 published `{published[:16]}…` vs origin/main `{expected[:16]}…`",
         )
+    return result
+
+
+def check_sources(base: str) -> Result:
+    result = Result("Every published audit row cites an official MLB response")
+    url = base + "docs/audit.html"
+    status, headers, body = http_get(url)
+    result.add(status == 200 and "html" in headers.get("content-type", "?"),
+               f"`{url}` → {status}")
+    table = Table()
+    table.feed(body.decode("utf-8", "replace"))
+    result.add(len(table.rows) == AUDIT_ROWS,
+               f"{len(table.rows)} data rows (expected {AUDIT_ROWS}: 15 schedule + 26 club-season)")
+    unsourced = [index for index, row in enumerate(table.rows, 1)
+                 if not any(urlsplit(link).netloc == OFFICIAL_HOST for link in row)]
+    result.add(not unsourced,
+               f"every row links `{OFFICIAL_HOST}`" if not unsourced
+               else f"rows without an official source link: {unsourced}")
     return result
 
 
@@ -200,7 +247,7 @@ def main(argv: list[str] | None = None) -> int:
     base = args.base if args.base.endswith("/") else args.base + "/"
     started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    sections = [check_pages(base), check_assets(base), check_cors()]
+    sections = [check_pages(base), check_assets(base), check_sources(base), check_cors()]
     if not args.skip_browser:
         sections.append(check_browser(base))
 
