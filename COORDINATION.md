@@ -238,7 +238,7 @@ command it names was checked against the working tree:
 | `node --check docs/js/format.js` | missing (`docs/format.js`) | `docs/js/format.js` | same run |
 | `node --check docs/js/app.js` | missing (`docs/app.js`) | `docs/js/app.js` | same run |
 | `node --test tests/test_eventlog.mjs` | file and command absent | `tests/test_eventlog.mjs`, 9 tests, synthetic fixtures | `node --test tests/test_eventlog.mjs` locally and in that run |
-| `automation/github-actions/pages.yml` (Repository map) | absent | restored as an inactive template | `python -c "import yaml"`-free syntax check: it is under `automation/`, so it is not executed |
+| `automation/github-actions/pages.yml` (Repository map) | absent | restored as an inactive template | PyYAML 6.0.2 parses all four workflow files: valid YAML, `deploy` job, `push`/`workflow_dispatch` triggers; living under `automation/` means GitHub does not run it |
 | `python -m unittest discover -s tests -v`, `python -m compileall -q mlb_pbp` | present | present, 5 tests now | same run |
 | "checks browser JavaScript syntax, and exercises CLI help" (CI) | syntax only | syntax, `node --test`, and `python -m mlb_pbp --help` | [`.github/workflows/audit.yml`](.github/workflows/audit.yml) |
 
@@ -270,6 +270,10 @@ the four `docs/js` assets, and the browser's module-load assertion); the
 [report on `dbbc048`](https://github.com/snapquast73-boop/PBPMN/commit/dbbc04808891747f439677f0328cc8153c52a0aa#commitcomment-211115505)
 shows only those items failing, with every existing page byte-identical to `main` and all 41 audit rows still sourced.
 The gate for this change is the post-merge deployment run, recorded below.
+
+**Request for another owner (not edited here).** `.github/workflows/published-site-check.yml` uses `actions/checkout@v4`
+and `actions/setup-python@v5`, which the runner now warns are Node 20 targets; its owner can bump both. It is outside this
+session's scope, so nothing in it was touched.
 
 **Flagged, not silently filled in.** `docs/review.html` gains an "Event log scope" section: the uploaded README's
 description of review stages, scoring-pending rulings and boundary calls is **not** what the reconstructed log
