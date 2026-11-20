@@ -12,7 +12,7 @@ Checks, in order:
 4. every published table row on the schedule audit still cites
    ``statsapi.mlb.com`` -- the same rule ``tests/test_site.py`` applies offline;
 5. MLB's endpoints return ``Access-Control-Allow-Origin`` for the Pages origin, so
-   the browser-side fetch in ``docs/api.js`` can work at all;
+   the browser-side fetch in ``docs/js/api.js`` can work at all;
 6. optionally, a real Chrome run of the published site (deep link, tabs, search,
    source links, downloads) via ``tools/browser_check.py``.
 
@@ -45,7 +45,7 @@ PAGES_ORIGIN = "https://snapquast73-boop.github.io"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 PAGES = ["", "docs/", "docs/index.html", "docs/methodology.html", "docs/audit.html", "docs/review.html"]
-ASSETS = ["docs/style.css", "docs/api.js", "docs/app.js", "docs/format.js"]
+ASSETS = ["docs/style.css", "docs/js/api.js", "docs/js/format.js", "docs/js/app.js", "docs/js/eventlog.js"]
 #: URL path -> file in the repository (directory URLs serve their index page).
 GIT_PATH = {"": "index.html", "docs/": "docs/index.html"}
 AUDIT_ROWS = 41
@@ -123,7 +123,7 @@ def check_pages(base: str) -> Result:
                 ('id="games"', "schedule container present"),
                 ('id="game"', "game section present"),
                 ('id="content"', "game content container present"),
-                ('src="app.js"', "viewer module referenced"),
+                ('src="js/app.js"', "viewer module referenced from `docs/js/`"),
                 ('href="style.css"', "stylesheet referenced"),
                 ("review.html", "Flagged for Review linked"),
             ):
