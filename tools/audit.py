@@ -13,7 +13,7 @@ DAY = '2026-08-11'
 
 
 def schedule(**params):
-    url = BASE + urlencode(dict(sportId=1, gameTypes='R,F,D,L,W', **params))
+    url = BASE + urlencode(dict(sportId=1, gameTypes='R,F,D,L,W', **params), safe=',')
     for attempt in range(3):
         try:
             with urlopen(url, timeout=40) as r:
@@ -21,8 +21,9 @@ def schedule(**params):
                 data = json.load(r)
             assert 'MLB Advanced Media' in data['copyright']
             return url, data
-        except Exception:
+        except Exception as exc:
             if attempt == 2:
+                print(f"::error::{url}: {type(exc).__name__}: {exc}", flush=True)
                 raise
             time.sleep(2 ** attempt)
 

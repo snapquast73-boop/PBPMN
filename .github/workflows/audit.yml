@@ -1,5 +1,5 @@
 name: Verify MLB schedule sources
-on: [push, workflow_dispatch]
+on: [workflow_dispatch, push]
 permissions:
   contents: read
 jobs:
