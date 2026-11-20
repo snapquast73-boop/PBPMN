@@ -1,0 +1,32 @@
+name: Verify archive and Pages viewer
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check internal links, source citations, archive and JavaScript
+        run: |
+          python -m unittest discover -s tests -v
+          python -m compileall -q mlb_pbp
+          for f in docs/*.js; do node --check "$f"; done
+      - name: Reconcile all published schedule rows with MLB
+        run: python tools/audit.py && git diff --exit-code docs/audit.html
+      - name: Retrieve and verify a complete official archive window
+        run: |
+          python -m mlb_pbp archive --start 2024-04-01 --end 2024-04-01
+          python -m mlb_pbp verify archive
+      - name: Exercise project deep links, tabs, search, sources and downloads in Chrome
+        run: |
+          pip install playwright==1.56.0
+          python tools/browser_check.py
+      - name: Smoke-test the public deployment (post-merge dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: python tools/browser_check.py https://snapquast73-boop.github.io/PBPMN/
