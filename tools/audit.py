@@ -63,5 +63,5 @@ def render():
 
 
 if __name__ == '__main__':
-    p = Path('tools/audit-template.html').read_text()
+    p = '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schedule audit · MLB Plaintext</title><link rel="stylesheet" href="style.css"><main><nav><a href="./">Archive</a> / <a href="review.html">Flagged for Review</a></nav><h1>Schedule audit</h1><h2>August 11, 2026</h2><p>Current official records for the imported report’s date, not a reconstruction of its midnight snapshot.</p><!--DATA--></main></html>\n'
     Path('docs/audit.html').write_text(p.replace('<!--DATA-->', render()))
