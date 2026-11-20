@@ -140,3 +140,18 @@ These remain on the [Flagged for Review page](docs/review.html).
   [run 44829362731](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829362731)).
 - Merge commit, Pages deployment and the post-deploy published-site check are appended below once
   they exist.
+**Published — a1fdfd4c verification follow-up.** [PR #8](https://github.com/snapquast73-boop/PBPMN/pull/8)
+merged to `main` at 2026-11-20T22:29:09Z as [`a9dbd91`](https://github.com/snapquast73-boop/PBPMN/commit/a9dbd91d47a9f89d154b45011187065a797b27d1), with both required checks green
+(`published` 13 s, `verify` 36 s). [Pages build for `a9dbd91`](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds)
+reported `built` in 33.9 s. A `workflow_dispatch` run of the new check on `main`
+([44829473852](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829473852)) re-tested the live site against that merge
+commit and posted **PASS (4/4)** as a commit comment on `a9dbd91`: every published page and asset 200, `docs/` assets
+byte-identical to `main`, `Access-Control-Allow-Origin: *` from both MLB endpoints for the Pages origin, and a Chrome run of
+`https://snapquast73-boop.github.io/PBPMN/?date=2024-04-01&game=745675` that exercised the tabs, search, per-row source links
+and all three downloads without a page error.
+
+**Final state of this session's scope.** The published GitHub Pages site is functional and independently verified; no
+application file was changed by this session, and no other session's work was overwritten. Remaining items are the
+non-blocking, already-published findings on [Flagged for Review](https://snapquast73-boop.github.io/PBPMN/docs/review.html)
+(stale 2026-08-11 snapshot, stale Athletics identifiers, changed venue name, invented season explanations) plus the
+`Unverified` rows recorded above. Nothing on that page blocks the site.
