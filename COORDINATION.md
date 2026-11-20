@@ -260,6 +260,13 @@ Pages template; those stay listed as unverified losses on the review page until 
   marker was committed (`grep -c '^<<<<<<<'` = 0). A later `main` advance (`db85edb`, another verification record) was
   rebased onto the same way.
 
+**Board close-out for this session.** The evidence above shipped as
+[PR #19](https://github.com/snapquast73-boop/PBPMN/pull/19), merged at `2026-11-20T23:15:09Z` as
+[`f2cff4f`](https://github.com/snapquast73-boop/PBPMN/commit/f2cff4f) after its `verify` (twice) and `published` checks
+passed. The Pages build for that merge commit succeeded and its deployment run
+([44835456378](https://github.com/snapquast73-boop/PBPMN/actions/runs/44835456378), `deployment_status`) reports
+`published: success`. No application file was touched by PR #19; the site published by PR #16 is unchanged by it.
+
 
 ### Restored files — each one is a line of the original README
 
