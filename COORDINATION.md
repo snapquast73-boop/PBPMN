@@ -396,3 +396,88 @@ implements, so it stays published as unverified rather than being restated as a 
   ([#11](https://github.com/snapquast73-boop/PBPMN/pull/11),
   [#21](https://github.com/snapquast73-boop/PBPMN/pull/21)) are theirs to merge; neither changes site
   files.
+
+---
+
+## Session `60a9ae00` — final integration, line-by-line verification and close-out (2026-11-22)
+
+- **In progress — 60a9ae00 (2026-11-22):** final integration session on the Arena-assigned branch `arena/60a9ae00-pbpmn` (branched from `1d6f962`, the PR #22 merge; no other session has commits newer than that on `main`). Scope: `COORDINATION.md`, `VERIFICATION-60a9ae00.md`, and — if a verified functional defect is found — the minimal file that fixes it, logged here first. Tasks: (1) line-by-line review of the repository against the original upload (`14c9aaf`) and the original README's documented behaviour; (2) re-verify every published table row and the live site against official `statsapi.mlb.com` responses fetched in this session; (3) confirm the site builds with no broken links; (4) triage the stale open [PR #11](https://github.com/snapquast73-boop/PBPMN/pull/11) (last commit 2026-11-20T22:33Z, >60 min with no activity, `CONFLICTING`; its `VERIFICATION-26c1dbb9.md` is already in `main` byte-identical, but merging the branch would revert the restored `docs/js/` layout from PR #16) and open [issue #1](https://github.com/snapquast73-boop/PBPMN/issues/1) per the takeover rule, noting the handoff here; (5) open the integration PR to `main`, merge it after checks pass, confirm the GitHub Pages deployment, and record the PR link and merge result below. Flagged irregularities stay on the published [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html) and do not block the merge.
+
+---
+
+## Integration of PR #11's unique board content (session `60a9ae00`, 2026-11-22)
+
+PR #11 (`arena/26c1dbb9-pbpmn`) was stale and `CONFLICTING` (>60 min, no commits since
+2026-11-20T22:33Z; takeover rule applied). Its `VERIFICATION-26c1dbb9.md` is byte-identical to
+the copy already in `main` (integrated verbatim by a5191c3d in PR #12), and its application,
+workflow, tool and README files are all older than `main` — merging the branch would have
+reverted PR #9's hardened published-site check and PR #16's restored `docs/js/` layout. The one
+unique artifact, session 26c1dbb9's board section below, was **not** in `main`, so it is
+integrated here verbatim; no other content from the branch is merged. PR #11 was closed as
+superseded with a comment pointing at this section. Nothing from any session was discarded.
+
+## Session 26c1dbb9 — independent line-by-line verification (2026-11-20)
+
+- **In progress — 26c1dbb9 (2026-11-20):** independent read-only review of the integrated site, audit rows and offline tests; scope: `VERIFICATION-26c1dbb9.md` and this appended coordination entry only. No application, data, navigation or styling changes. Existing restoration (8f074539), published-check (a1fdfd4c) and hardening (17011489, PR #9 open) scopes are left untouched; any defect found in another owner's scope will be logged here for handoff, not edited. Arena requires the assigned `arena/26c1dbb9-pbpmn` branch, so no extra session branch is created. This session will not merge PR #9 or duplicate its merge.
+- **Done — 26c1dbb9, independent verification:** read the board before claiming; preserved all other owners' scopes (no application/data/navigation/styling edits; PR #9 untouched). Ran offline suite (4/4), `compileall`, `node --check` ×3, CLI `--help` ×4, full internal-link sweep (all resolve, 41/41 audit rows link `statsapi.mlb.com`, no dead upstream/`docs/js` references), local Pages-style serve (all pages/assets 200), live-site fetch (viewer renders; today correctly shows `No qualifying games on this date.` with MLB source link), and Pages API (`built`, `main`/`/`, `legacy`). Fetched MLB directly in this session: [sports/1](https://statsapi.mlb.com/api/v1/sports/1), [teams](https://statsapi.mlb.com/api/v1/teams?sportId=1&fields=teams,id,name,abbreviation,fileCode), [2026-08-11 schedule](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-11&gameTypes=R,F,D,L,W) + [venue slice](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-08-11&gameTypes=R,F,D,L,W&fields=dates,games,gamePk,venue,id,name) (all 15 rows + Eastern times recomputed), all 26 season `totalGames` windows (all match `docs/audit.html`), [2024-04-01 Giants](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=137&gameTypes=R,F,D,L,W) / [Athletics](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&teamId=133&gameTypes=R,F,D,L,W), [2014 opener](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2014-03-31&teamId=137&gameTypes=R,F,D,L,W) / [2014 last](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2014-10-29&teamId=137&gameTypes=R,F,D,L,W), [2026-03-01 unfiltered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01) vs [filtered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01&gameTypes=R,F,D,L,W), [745675 feed](https://statsapi.mlb.com/api/v1.1/game/745675/feed/live), [746170 at-bat 12](https://statsapi.mlb.com/api/v1.1/game/746170/feed/live?fields=liveData,plays,allPlays,about,atBatIndex,result,description) (strikeout, contradicting the import's single), [2026-11-20](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-20&gameTypes=R,F,D,L,W&fields=copyright,totalGames) (`0`). First/last game strings verified via CI regeneration ([run 44829063552](https://github.com/snapquast73-boop/PBPMN/actions/runs/44829063552), no diff) + spot checks above. Full row-by-row table with source links: [verification report](VERIFICATION-26c1dbb9.md). Cited LIVPBP2/POSTSSNALRT `reviews.html` confirmed live but are separate repos (out of scope); PBPMN verified independently.
+- **Needs review — 26c1dbb9:** [report §E](VERIFICATION-26c1dbb9.md) — import's SD-pattern/`est.` explanations, subtotals, play-count ranges, midnight Preview snapshot, contradicted Estrada single/pitches, `OAK`/`Dodger Stadium`/count irregularities, unavailable original implementation (upstream 404), `745675` decisions detail not re-derived here, manifest media-type gap, audit-CI sensitivity to MLB revisions. All remain on the live [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html); none block the merge. Handoff requests logged in report §G (PR #9 merge by its owner; manifest media-type for `mlb_pbp` owner). No new functional defect established.
+
+---
+
+## Session `60a9ae00` — completion record (2026-11-22)
+
+- **Done — 60a9ae00, line-by-line review:** every file in the tree compared with the original
+  upload [`14c9aaf`](https://github.com/snapquast73-boop/PBPMN/tree/14c9aaf304a65ef0c8e4b25819a6eb0b829218c3):
+  `.gitignore`, `.nojekyll`, `LICENSE`, `pyproject.toml` byte-identical; root `index.html`
+  intentionally upgraded to a query- and hash-preserving redirect (deep links depend on it);
+  `README.md` rewritten only because the upstream site it named returns HTTP 404
+  ([API](https://api.github.com/repos/buffedlizard55-lab/MLB-PBP)); the imported
+  `GIANTS_ATHLETICS_2014-2026_REVIEW.md` replaced by a source-audit stub because its estimates
+  are the flagged items — both originals preserved at `14c9aaf`. No dead upstream or pre-`js/`
+  module references anywhere in the tree. Full file-by-file table:
+  [verification report §A](VERIFICATION-60a9ae00.md).
+- **Done — 60a9ae00, every published table row re-verified in this session against MLB:**
+  **15/15** daily rows field-for-field (Eastern times recomputed from MLB's UTC `gameDate`,
+  including the `UNIQLO Field at Dodger Stadium` venue name MLB now returns);
+  **26/26** club-season `totalGames` counts re-fetched from each row's own source URL family
+  (SF 181/163/167/163/163/163/65/169/163/165/162/162/123; ATH 165/162/163/163/164/165/73/163/162/162/163/162/120);
+  **26/26** first-game and **26/26** last-game cells matched official responses field-for-field
+  (0 mismatches). All **41/41** rows carry a `statsapi.mlb.com` source link. Supporting checks
+  (each fetched live): [sports/1](https://statsapi.mlb.com/api/v1/sports/1),
+  [teams 137/133](https://statsapi.mlb.com/api/v1/teams?sportId=1&fields=teams,id,name,abbreviation,fileCode&teamId=137,133),
+  [Spring exclusion: 16 unfiltered `S` games vs 0 filtered](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-03-01&fields=copyright,totalGames,dates,games,gameType),
+  [viewer query 2024-04-01 = 14 games](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2024-04-01&gameTypes=R,F,D,L,W&hydrate=linescore&fields=copyright,totalGames),
+  [745675 decisions = Houck/Boyle/Anderson](https://statsapi.mlb.com/api/v1.1/game/745675/feed/live?fields=gamePk,gameData,teams,away,home,name,liveData,linescore,decisions,winner,loser,save,fullName),
+  [746170 at-bat 12 = strikeout (import's single contradicted)](https://statsapi.mlb.com/api/v1.1/game/746170/feed/live?fields=liveData,plays,allPlays,about,atBatIndex,result,description),
+  [2026-11-22 = 0 games](https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-11-22&gameTypes=R,F,D,L,W&fields=copyright,totalGames).
+  Full row-by-row tables with links: [report §B](VERIFICATION-60a9ae00.md).
+- **Done — 60a9ae00, build and links:** offline suite **5/5**, `compileall`, `node --check` ×4,
+  `node --test` **9/9**, CLI `--help`; internal sweep **37 references, 0 missing**; Pages-style
+  local serve of the repo at `/PBPMN/` — 14 paths 200 with expected content types and the root
+  redirect preserving `?date=…&game=…`. CI on this branch:
+  [verify 44975192093](https://github.com/snapquast73-boop/PBPMN/actions/runs/44975192093) and
+  [44974138781](https://github.com/snapquast73-boop/PBPMN/actions/runs/44974138781) both green —
+  including the **full 41-row MLB re-derivation with no diff**, a real archive window with
+  digest verification and the Chrome walkthrough. Published-site check
+  [44974138726](https://github.com/snapquast73-boop/PBPMN/actions/runs/44974138726):
+  **PASS 5/5** (readable report posted on commit `451dc47`). Report:
+  [VERIFICATION-60a9ae00.md](VERIFICATION-60a9ae00.md).
+- **Done — 60a9ae00, live site:** root redirect, `docs/` viewer (today correctly empty with an
+  MLB source link), `?date=2026-08-11` (15 official games), `?date=2024-04-01&game=745675`
+  (line score 9–0, decisions Houck/Boyle/Anderson, per-row sources, three downloads),
+  `docs/audit.html` (41 sourced rows, byte-identical to `main`), `docs/review.html` and
+  `docs/methodology.html` all fetched live and correct;
+  [Pages API](https://api.github.com/repos/snapquast73-boop/PBPMN/pages/builds/latest)
+  `status: built` for `1d6f962`.
+- **Done — 60a9ae00, triage:** [PR #11](https://github.com/snapquast73-boop/PBPMN/pull/11)
+  closed as superseded after integrating its one unique artifact (session 26c1dbb9's board
+  section, above) — its verification report was already in `main` byte-identical and its
+  branch would have reverted PR #9/#16; [issue #1](https://github.com/snapquast73-boop/PBPMN/issues/1)
+  closed with a final state comment. Handoff notes in [report §E](VERIFICATION-60a9ae00.md).
+- **Needs review — 60a9ae00:** unchanged from the live
+  [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html) and
+  [report §F](VERIFICATION-60a9ae00.md): the import's midnight `Preview` snapshot, `OAK`
+  identifiers, "Dodger Stadium" string, wrong Athletics game ID, contradicted Estrada
+  single/pitches, SD-pattern/`est.` explanations, subtotals and play-count ranges, the
+  unavailable original implementation (upstream 404), and the Event log scope gap. None of
+  these block the merge; they are published for review on the live site.
