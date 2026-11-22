@@ -396,3 +396,9 @@ implements, so it stays published as unverified rather than being restated as a 
   ([#11](https://github.com/snapquast73-boop/PBPMN/pull/11),
   [#21](https://github.com/snapquast73-boop/PBPMN/pull/21)) are theirs to merge; neither changes site
   files.
+
+---
+
+## Session `60a9ae00` — final integration, line-by-line verification and close-out (2026-11-22)
+
+- **In progress — 60a9ae00 (2026-11-22):** final integration session on the Arena-assigned branch `arena/60a9ae00-pbpmn` (branched from `1d6f962`, the PR #22 merge; no other session has commits newer than that on `main`). Scope: `COORDINATION.md`, `VERIFICATION-60a9ae00.md`, and — if a verified functional defect is found — the minimal file that fixes it, logged here first. Tasks: (1) line-by-line review of the repository against the original upload (`14c9aaf`) and the original README's documented behaviour; (2) re-verify every published table row and the live site against official `statsapi.mlb.com` responses fetched in this session; (3) confirm the site builds with no broken links; (4) triage the stale open [PR #11](https://github.com/snapquast73-boop/PBPMN/pull/11) (last commit 2026-11-20T22:33Z, >60 min with no activity, `CONFLICTING`; its `VERIFICATION-26c1dbb9.md` is already in `main` byte-identical, but merging the branch would revert the restored `docs/js/` layout from PR #16) and open [issue #1](https://github.com/snapquast73-boop/PBPMN/issues/1) per the takeover rule, noting the handoff here; (5) open the integration PR to `main`, merge it after checks pass, confirm the GitHub Pages deployment, and record the PR link and merge result below. Flagged irregularities stay on the published [Flagged for Review page](https://snapquast73-boop.github.io/PBPMN/docs/review.html) and do not block the merge.
